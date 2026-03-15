@@ -1,0 +1,105 @@
+=== Action Type 2-grams Grouped by Starting Action ===
+
+Starting Action: explore
+========================
+ 1. explore -> goto (count: 42) (total avg: 94.0) [explore:23.1, goto:71.0] [END: rooms:2.6(med:2.0,min:1,max:6), held:0.1(med:0.0,min:0,max:1), container:0.12(med:0.00,min:0,max:1), satisfied:4.0(med:5.0,min:0,max:9), steps:1292(med:1348,min:33,max:2806)]
+ 2. explore -> sendmessage (count: 41) (total avg: 27.6) [explore:26.6, sendmessage:1.0] [END: rooms:2.1(med:2.0,min:1,max:6), held:0.0(med:0.0,min:0,max:1), container:0.15(med:0.00,min:0,max:1), satisfied:3.8(med:0.0,min:0,max:10), steps:1025(med:422,min:32,max:2978)]
+ 3. explore -> gograsp_target (count: 28) (total avg: 58.0) [explore:25.4, target:32.6] [END: rooms:2.1(med:2.0,min:1,max:5), held:0.5(med:0.0,min:0,max:2), container:0.46(med:0.00,min:0,max:1), satisfied:3.0(med:2.0,min:0,max:9), steps:1118(med:798,min:34,max:2874)]
+ 4. explore -> gograsp_container (count: 12) (total avg: 89.8) [explore:48.6, container:41.2] [END: rooms:1.5(med:1.0,min:1,max:3), held:0.2(med:0.0,min:0,max:1), container:0.00(med:0.00,min:0,max:0), satisfied:0.2(med:0.0,min:0,max:1), steps:309(med:126,min:55,max:1043)]
+ 5. explore -> transport (count: 7) (total avg: 120.1) [explore:18.4, transport:101.7] [END: rooms:2.7(med:3.0,min:1,max:4), held:1.7(med:1.0,min:1,max:3), container:0.57(med:1.00,min:0,max:1), satisfied:6.4(med:7.0,min:3,max:9), steps:2060(med:2088,min:1187,max:2788)]
+
+Total 2-grams starting with 'explore': 5
+Total count for 'explore': 130
+
+--------------------------------------------------------------------------------
+
+Starting Action: gograsp_container
+==================================
+ 1. gograsp_container -> gograsp_target (count: 22) (total avg: 108.1) [container:60.1, target:48.0] [END: rooms:1.4(med:1.0,min:0,max:2), held:0.2(med:0.0,min:0,max:3), container:0.95(med:1.00,min:0,max:1), satisfied:2.1(med:0.0,min:0,max:8), steps:835(med:528,min:77,max:2670)]
+ 2. gograsp_container -> putin (count: 15) (total avg: 72.7) [container:50.1, putin:22.7] [END: rooms:1.5(med:2.0,min:0,max:3), held:1.0(med:1.0,min:1,max:1), container:1.00(med:1.00,min:1,max:1), satisfied:1.1(med:1.0,min:0,max:6), steps:660(med:624,min:106,max:1352)]
+ 3. gograsp_container -> sendmessage (count: 8) (total avg: 56.6) [container:55.6, sendmessage:1.0] [END: rooms:1.2(med:1.0,min:0,max:3), held:0.0(med:0.0,min:0,max:0), container:0.88(med:1.00,min:0,max:1), satisfied:1.8(med:1.0,min:0,max:6), steps:769(med:460,min:90,max:2201)]
+ 4. gograsp_container -> explore (count: 7) (total avg: 101.9) [container:85.9, explore:16.0] [END: rooms:1.0(med:1.0,min:0,max:2), held:0.0(med:0.0,min:0,max:0), container:1.00(med:1.00,min:1,max:1), satisfied:1.6(med:0.0,min:0,max:5), steps:605(med:423,min:242,max:1778)]
+ 5. gograsp_container -> goto (count: 6) (total avg: 115.7) [container:59.7, goto:56.0] [END: rooms:1.2(med:1.0,min:0,max:3), held:0.2(med:0.0,min:0,max:1), container:0.83(med:1.00,min:0,max:1), satisfied:3.3(med:4.0,min:0,max:8), steps:1068(med:1290,min:104,max:1910)]
+ 6. gograsp_container -> gograsp_container (count: 2) (total avg: 83.5) [container:33.5, container:50.0] [END: rooms:1.5(med:1.0,min:1,max:2), held:0.5(med:0.5,min:0,max:1), container:0.00(med:0.00,min:0,max:0), satisfied:4.0(med:1.0,min:1,max:7), steps:1350(med:1350,min:396,max:2305)]
+ 7. gograsp_container -> transport (count: 1) (total avg: 61.0) [container:34.0, transport:27.0] [END: rooms:3.0(med:3.0,min:3,max:3), held:4.0(med:4.0,min:4,max:4), container:1.00(med:1.00,min:1,max:1), satisfied:4.0(med:4.0,min:4,max:4), steps:2060(med:2060,min:2060,max:2060)]
+
+Total 2-grams starting with 'gograsp_container': 7
+Total count for 'gograsp_container': 61
+
+--------------------------------------------------------------------------------
+
+Starting Action: gograsp_target
+===============================
+ 1. gograsp_target -> putin (count: 111) (total avg: 70.7) [target:44.9, putin:25.8] [END: rooms:1.5(med:1.0,min:0,max:5), held:2.0(med:2.0,min:1,max:3), container:1.00(med:1.00,min:1,max:1), satisfied:1.9(med:1.0,min:0,max:7), steps:1039(med:924,min:192,max:2731)]
+ 2. gograsp_target -> transport (count: 74) (total avg: 145.6) [target:43.9, transport:101.7] [END: rooms:1.8(med:2.0,min:0,max:5), held:2.4(med:2.0,min:1,max:5), container:0.39(med:0.00,min:0,max:1), satisfied:4.6(med:5.0,min:0,max:9), steps:1698(med:1618,min:167,max:2916)]
+ 3. gograsp_target -> gograsp_target (count: 36) (total avg: 88.8) [target:51.1, target:37.8] [END: rooms:1.6(med:2.0,min:0,max:3), held:1.2(med:1.0,min:0,max:3), container:0.31(med:0.00,min:0,max:1), satisfied:4.1(med:4.0,min:0,max:9), steps:1348(med:1322,min:104,max:2767)]
+ 4. gograsp_target -> goto (count: 22) (total avg: 112.5) [target:40.8, goto:71.7] [END: rooms:1.3(med:1.0,min:0,max:3), held:2.1(med:1.0,min:0,max:4), container:0.50(med:0.00,min:0,max:1), satisfied:2.5(med:2.0,min:0,max:8), steps:890(med:798,min:69,max:1773)]
+ 5. gograsp_target -> sendmessage (count: 17) (total avg: 46.2) [target:45.2, sendmessage:1.0] [END: rooms:1.9(med:2.0,min:1,max:6), held:1.6(med:1.0,min:0,max:4), container:0.29(med:0.00,min:0,max:1), satisfied:3.5(med:2.0,min:0,max:10), steps:1078(med:753,min:110,max:2999)]
+ 6. gograsp_target -> explore (count: 9) (total avg: 75.3) [target:56.3, explore:19.0] [END: rooms:1.6(med:1.0,min:0,max:3), held:1.0(med:1.0,min:1,max:1), container:0.00(med:0.00,min:0,max:0), satisfied:4.6(med:5.0,min:0,max:8), steps:1247(med:1469,min:222,max:2223)]
+ 7. gograsp_target -> gograsp_container (count: 8) (total avg: 79.9) [target:40.5, container:39.4] [END: rooms:0.8(med:1.0,min:0,max:2), held:1.0(med:1.0,min:1,max:1), container:0.00(med:0.00,min:0,max:0), satisfied:0.5(med:0.0,min:0,max:4), steps:382(med:255,min:58,max:1184)]
+
+Total 2-grams starting with 'gograsp_target': 7
+Total count for 'gograsp_target': 277
+
+--------------------------------------------------------------------------------
+
+Starting Action: goto
+=====================
+ 1. goto -> sendmessage (count: 67) (total avg: 30.9) [goto:29.9, sendmessage:1.0] [END: rooms:0.8(med:0.0,min:0,max:6), held:0.2(med:0.0,min:0,max:4), container:0.07(med:0.00,min:0,max:1), satisfied:1.8(med:0.0,min:0,max:10), steps:549(med:0,min:0,max:2965)]
+ 2. goto -> explore (count: 64) (total avg: 93.1) [goto:65.9, explore:27.2] [END: rooms:2.2(med:2.0,min:0,max:6), held:0.2(med:0.0,min:0,max:3), container:0.22(med:0.00,min:0,max:1), satisfied:4.3(med:5.0,min:0,max:9), steps:1386(med:1686,min:0,max:2976)]
+ 3. goto -> gograsp_target (count: 25) (total avg: 98.2) [goto:57.0, target:41.2] [END: rooms:1.8(med:2.0,min:0,max:5), held:0.4(med:0.0,min:0,max:3), container:0.40(med:0.00,min:0,max:1), satisfied:3.1(med:2.0,min:0,max:9), steps:1015(med:810,min:53,max:2681)]
+ 4. goto -> gograsp_container (count: 17) (total avg: 101.9) [goto:38.1, container:63.9] [END: rooms:1.2(med:1.0,min:0,max:2), held:0.3(med:0.0,min:0,max:1), container:0.00(med:0.00,min:0,max:0), satisfied:0.9(med:0.0,min:0,max:6), steps:445(med:268,min:6,max:1955)]
+ 5. goto -> transport (count: 10) (total avg: 145.5) [goto:84.9, transport:60.6] [END: rooms:0.7(med:0.0,min:0,max:2), held:3.5(med:4.0,min:1,max:4), container:0.80(med:1.00,min:0,max:1), satisfied:3.1(med:3.0,min:0,max:9), steps:1316(med:1371,min:410,max:1953)]
+ 6. goto -> goto (count: 5) (total avg: 87.8) [goto:42.4, goto:45.4] [END: rooms:1.2(med:1.0,min:0,max:2), held:0.8(med:0.0,min:0,max:4), container:0.20(med:0.00,min:0,max:1), satisfied:2.2(med:0.0,min:0,max:7), steps:820(med:269,min:169,max:2427)]
+ 7. goto -> putin (count: 1) (total avg: 40.0) [goto:22.0, putin:18.0] [END: rooms:0.0(med:0.0,min:0,max:0), held:1.0(med:1.0,min:1,max:1), container:1.00(med:1.00,min:1,max:1), satisfied:2.0(med:2.0,min:2,max:2), steps:172(med:172,min:172,max:172)]
+
+Total 2-grams starting with 'goto': 7
+Total count for 'goto': 189
+
+--------------------------------------------------------------------------------
+
+Starting Action: putin
+======================
+ 1. putin -> gograsp_target (count: 100) (total avg: 66.8) [putin:25.6, target:41.2] [END: rooms:1.4(med:1.0,min:0,max:5), held:1.9(med:2.0,min:1,max:3), container:1.00(med:1.00,min:1,max:1), satisfied:1.7(med:1.0,min:0,max:7), steps:1088(med:958,min:252,max:2761)]
+ 2. putin -> sendmessage (count: 12) (total avg: 27.9) [putin:26.9, sendmessage:1.0] [END: rooms:1.9(med:2.0,min:0,max:5), held:1.8(med:2.0,min:1,max:3), container:1.00(med:1.00,min:1,max:1), satisfied:2.2(med:2.0,min:0,max:6), steps:1045(med:846,min:318,max:1976)]
+ 3. putin -> goto (count: 6) (total avg: 96.8) [putin:26.2, goto:70.7] [END: rooms:1.5(med:1.0,min:1,max:3), held:1.5(med:1.0,min:1,max:3), container:1.00(med:1.00,min:1,max:1), satisfied:3.5(med:3.0,min:0,max:7), steps:1112(med:1083,min:378,max:2142)]
+ 4. putin -> transport (count: 6) (total avg: 107.5) [putin:19.5, transport:88.0] [END: rooms:1.8(med:1.0,min:1,max:5), held:2.5(med:3.0,min:1,max:3), container:1.00(med:1.00,min:1,max:1), satisfied:2.3(med:1.0,min:0,max:6), steps:1490(med:1087,min:668,max:2877)]
+ 5. putin -> explore (count: 5) (total avg: 42.8) [putin:23.8, explore:19.0] [END: rooms:1.8(med:1.0,min:1,max:4), held:1.6(med:2.0,min:1,max:2), container:1.00(med:1.00,min:1,max:1), satisfied:3.6(med:4.0,min:0,max:7), steps:1652(med:1868,min:452,max:2741)]
+
+Total 2-grams starting with 'putin': 5
+Total count for 'putin': 129
+
+--------------------------------------------------------------------------------
+
+Starting Action: sendmessage
+============================
+ 1. sendmessage -> goto (count: 70) (total avg: 56.5) [sendmessage:1.0, goto:55.5] [END: rooms:1.9(med:2.0,min:0,max:6), held:0.3(med:0.0,min:0,max:4), container:0.16(med:0.00,min:0,max:1), satisfied:4.6(med:5.0,min:0,max:10), steps:1300(med:1430,min:1,max:2979)]
+ 2. sendmessage -> explore (count: 42) (total avg: 32.4) [sendmessage:1.0, explore:31.4] [END: rooms:0.6(med:0.0,min:0,max:4), held:0.1(med:0.0,min:0,max:3), container:0.05(med:0.00,min:0,max:1), satisfied:2.1(med:0.0,min:0,max:10), steps:550(med:1,min:1,max:2960)]
+ 3. sendmessage -> gograsp_target (count: 41) (total avg: 61.3) [sendmessage:1.0, target:60.3] [END: rooms:1.6(med:1.0,min:0,max:6), held:0.3(med:0.0,min:0,max:2), container:0.34(med:0.00,min:0,max:1), satisfied:2.9(med:1.0,min:0,max:9), steps:936(med:690,min:1,max:2616)]
+ 4. sendmessage -> gograsp_container (count: 12) (total avg: 72.8) [sendmessage:1.0, container:71.8] [END: rooms:1.4(med:2.0,min:0,max:2), held:0.1(med:0.0,min:0,max:1), container:0.00(med:0.00,min:0,max:0), satisfied:2.2(med:0.0,min:0,max:6), steps:703(med:460,min:35,max:1672)]
+ 5. sendmessage -> transport (count: 11) (total avg: 99.0) [sendmessage:1.0, transport:98.0] [END: rooms:2.4(med:2.0,min:1,max:5), held:2.4(med:2.0,min:1,max:4), container:0.55(med:1.00,min:0,max:1), satisfied:3.8(med:3.0,min:0,max:10), steps:1228(med:1479,min:112,max:2388)]
+ 6. sendmessage -> putin (count: 2) (total avg: 26.5) [sendmessage:1.0, putin:25.5] [END: rooms:1.5(med:1.0,min:1,max:2), held:2.0(med:2.0,min:1,max:3), container:1.00(med:1.00,min:1,max:1), satisfied:3.5(med:1.0,min:1,max:6), steps:898(med:898,min:552,max:1243)]
+ 7. sendmessage -> sendmessage (count: 1) (total avg: 2.0) [sendmessage:1.0, sendmessage:1.0] [END: rooms:2.0(med:2.0,min:2,max:2), held:3.0(med:3.0,min:3,max:3), container:1.00(med:1.00,min:1,max:1), satisfied:2.0(med:2.0,min:2,max:2), steps:1191(med:1191,min:1191,max:1191)]
+
+Total 2-grams starting with 'sendmessage': 7
+Total count for 'sendmessage': 179
+
+--------------------------------------------------------------------------------
+
+Starting Action: transport
+==========================
+ 1. transport -> sendmessage (count: 34) (total avg: 88.1) [transport:87.1, sendmessage:1.0] [END: rooms:1.9(med:2.0,min:0,max:6), held:0.0(med:0.0,min:0,max:0), container:0.00(med:0.00,min:0,max:0), satisfied:7.0(med:7.0,min:2,max:10), steps:1860(med:1978,min:600,max:2735)]
+ 2. transport -> gograsp_target (count: 29) (total avg: 164.7) [transport:94.1, target:70.6] [END: rooms:1.6(med:2.0,min:0,max:4), held:0.0(med:0.0,min:0,max:0), container:0.00(med:0.00,min:0,max:0), satisfied:5.7(med:6.0,min:2,max:9), steps:1595(med:1555,min:540,max:2762)]
+ 3. transport -> gograsp_container (count: 10) (total avg: 177.5) [transport:105.3, container:72.2] [END: rooms:1.9(med:2.0,min:0,max:4), held:0.0(med:0.0,min:0,max:0), container:0.00(med:0.00,min:0,max:0), satisfied:4.4(med:4.0,min:2,max:7), steps:1412(med:1526,min:314,max:2206)]
+ 4. transport -> goto (count: 6) (total avg: 190.3) [transport:87.5, goto:102.8] [END: rooms:2.3(med:2.0,min:1,max:4), held:0.0(med:0.0,min:0,max:0), container:0.00(med:0.00,min:0,max:0), satisfied:6.2(med:5.0,min:4,max:9), steps:1650(med:1802,min:886,max:2455)]
+ 5. transport -> explore (count: 5) (total avg: 86.4) [transport:73.6, explore:12.8] [END: rooms:2.0(med:2.0,min:1,max:3), held:0.0(med:0.0,min:0,max:0), container:0.00(med:0.00,min:0,max:0), satisfied:6.2(med:7.0,min:3,max:9), steps:1327(med:1601,min:333,max:1804)]
+
+Total 2-grams starting with 'transport': 5
+Total count for 'transport': 84
+
+--------------------------------------------------------------------------------
+
+=== Summary Statistics ===
+Total unique starting actions: 7
+Total 2-gram types: 43
+Total 2-gram instances: 1049

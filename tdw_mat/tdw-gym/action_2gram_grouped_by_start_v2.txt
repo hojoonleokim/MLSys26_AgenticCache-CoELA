@@ -1,0 +1,165 @@
+================================================================================
+2-GRAM ACTION TRANSITIONS GROUPED BY STARTING ACTION
+(No Consecutive Duplicates, with Metadata)
+================================================================================
+
+
+================================================================================
+FROM: explore
+Total transitions: 132
+Overall: [action1_dur:90(med:82,min:32,max:425), action2_dur:108(med:59,min:1,max:687)] [action1@frame:1067(med:770,min:0,max:2877), action2@frame:1157(med:864,min:33,max:2980)] [rooms:2.2(med:2.0,min:1,max:6), held:0.5(med:0.0,min:0,max:3), container:0.00(med:0.00,min:0,max:0), satisfied:4.2(med:2.0,min:0,max:13)]
+================================================================================
+
+  → send message                   [  48] ( 36.4%)
+    [action1_dur:80(med:74,min:32,max:390), action2_dur:1(med:1,min:1,max:2)] [action1@frame:1300(med:998,min:0,max:2877), action2@frame:1380(med:1058,min:45,max:2980)] [rooms:2.1(med:2.0,min:1,max:5), held:0.3(med:0.0,min:0,max:3), container:0.00(med:0.00,min:0,max:0), satisfied:5.5(med:4.5,min:0,max:13)]
+
+  → go to                          [  37] ( 28.0%)
+    [action1_dur:90(med:80,min:32,max:228), action2_dur:202(med:178,min:43,max:485)] [action1@frame:1047(med:925,min:1,max:2684), action2@frame:1137(med:988,min:65,max:2837)] [rooms:2.5(med:2.0,min:1,max:6), held:0.6(med:0.0,min:0,max:3), container:0.00(med:0.00,min:0,max:0), satisfied:4.1(med:2.0,min:0,max:12)]
+
+  → go grasp target                [  27] ( 20.5%)
+    [action1_dur:104(med:90,min:32,max:425), action2_dur:107(med:80,min:15,max:434)] [action1@frame:891(med:430,min:1,max:2585), action2@frame:995(med:532,min:33,max:2682)] [rooms:2.3(med:2.0,min:1,max:6), held:0.6(med:0.0,min:0,max:2), container:0.00(med:0.00,min:0,max:0), satisfied:3.1(med:2.0,min:0,max:11)]
+
+  → go grasp container             [  16] ( 12.1%)
+    [action1_dur:99(med:81,min:32,max:420), action2_dur:196(med:116,min:22,max:687)] [action1@frame:521(med:118,min:0,max:2426), action2@frame:620(med:226,min:45,max:2506)] [rooms:1.6(med:1.0,min:1,max:4), held:0.1(med:0.0,min:0,max:1), container:0.00(med:0.00,min:0,max:0), satisfied:2.0(med:0.0,min:0,max:8)]
+
+  → transport                      [   4] (  3.0%)
+    [action1_dur:94(med:92,min:76,max:114), action2_dur:296(med:296,min:145,max:446)] [action1@frame:1820(med:1851,min:1115,max:2462), action2@frame:1914(med:1956,min:1205,max:2538)] [rooms:2.2(med:2.0,min:2,max:3), held:2.5(med:3.0,min:1,max:3), container:0.00(med:0.00,min:0,max:0), satisfied:6.2(med:5.0,min:4,max:11)]
+
+
+================================================================================
+FROM: go grasp container
+Total transitions: 60
+Overall: [action1_dur:213(med:164,min:18,max:1688), action2_dur:113(med:70,min:1,max:689)] [action1@frame:772(med:488,min:1,max:2610), action2@frame:985(med:676,min:19,max:2825)] [rooms:1.4(med:1.0,min:0,max:5), held:0.1(med:0.0,min:0,max:1), container:0.00(med:0.00,min:0,max:0), satisfied:3.5(med:2.0,min:0,max:13)]
+================================================================================
+
+  → go grasp target                [  27] ( 45.0%)
+    [action1_dur:217(med:119,min:18,max:1688), action2_dur:135(med:73,min:5,max:689)] [action1@frame:496(med:319,min:1,max:2506), action2@frame:713(med:511,min:19,max:2566)] [rooms:1.1(med:1.0,min:0,max:4), held:0.0(med:0.0,min:0,max:0), container:0.00(med:0.00,min:0,max:0), satisfied:1.9(med:0.0,min:0,max:9)]
+
+  → send message                   [  14] ( 23.3%)
+    [action1_dur:227(med:208,min:31,max:660), action2_dur:1(med:1,min:1,max:1)] [action1@frame:1338(med:1371,min:73,max:2539), action2@frame:1565(med:1733,min:125,max:2825)] [rooms:1.9(med:1.5,min:0,max:4), held:0.1(med:0.0,min:0,max:1), container:0.00(med:0.00,min:0,max:0), satisfied:6.5(med:7.5,min:0,max:13)]
+
+  → go to                          [   9] ( 15.0%)
+    [action1_dur:159(med:111,min:18,max:482), action2_dur:211(med:267,min:15,max:418)] [action1@frame:952(med:1090,min:1,max:1865), action2@frame:1111(med:1201,min:19,max:2347)] [rooms:1.4(med:1.0,min:0,max:5), held:0.0(med:0.0,min:0,max:0), container:0.00(med:0.00,min:0,max:0), satisfied:4.3(med:5.0,min:0,max:8)]
+
+  → put into container             [   6] ( 10.0%)
+    [action1_dur:205(med:178,min:98,max:343), action2_dur:142(med:146,min:123,max:146)] [action1@frame:452(med:391,min:99,max:1172), action2@frame:658(med:610,min:286,max:1270)] [rooms:1.3(med:1.0,min:1,max:2), held:1.0(med:1.0,min:1,max:1), container:0.00(med:0.00,min:0,max:0), satisfied:2.0(med:2.0,min:0,max:5)]
+
+  → explore                        [   4] (  6.7%)
+    [action1_dur:277(med:166,min:89,max:687), action2_dur:94(med:90,min:54,max:140)] [action1@frame:721(med:114,min:46,max:2610), action2@frame:998(med:568,min:135,max:2721)] [rooms:1.2(med:1.0,min:1,max:2), held:0.0(med:0.0,min:0,max:0), container:0.00(med:0.00,min:0,max:0), satisfied:3.8(med:3.0,min:0,max:9)]
+
+
+================================================================================
+FROM: go grasp target
+Total transitions: 231
+Overall: [action1_dur:132(med:91,min:5,max:689), action2_dur:172(med:146,min:1,max:801)] [action1@frame:1187(med:1069,min:19,max:2974), action2@frame:1320(med:1253,min:53,max:2993)] [rooms:1.5(med:1.0,min:0,max:5), held:2.0(med:2.0,min:0,max:4), container:0.00(med:0.00,min:0,max:0), satisfied:3.9(med:3.0,min:0,max:13)]
+================================================================================
+
+  → put into container             [ 119] ( 51.5%)
+    [action1_dur:105(med:86,min:5,max:689), action2_dur:139(med:146,min:90,max:146)] [action1@frame:1011(med:826,min:19,max:2566), action2@frame:1115(med:924,min:53,max:2993)] [rooms:1.4(med:1.0,min:0,max:4), held:2.0(med:2.0,min:1,max:3), container:0.00(med:0.00,min:0,max:0), satisfied:2.8(med:2.0,min:0,max:12)]
+
+  → transport                      [  60] ( 26.0%)
+    [action1_dur:175(med:108,min:5,max:664), action2_dur:340(med:304,min:15,max:801)] [action1@frame:1679(med:1768,min:77,max:2974), action2@frame:1855(med:1994,min:96,max:2979)] [rooms:2.0(med:2.0,min:0,max:5), held:2.4(med:2.0,min:1,max:4), container:0.00(med:0.00,min:0,max:0), satisfied:6.0(med:6.0,min:0,max:13)]
+
+  → go to                          [  20] (  8.7%)
+    [action1_dur:106(med:72,min:15,max:351), action2_dur:196(med:151,min:8,max:566)] [action1@frame:813(med:616,min:33,max:2410), action2@frame:919(med:728,min:90,max:2451)] [rooms:1.3(med:1.0,min:0,max:5), held:2.0(med:2.0,min:0,max:4), container:0.00(med:0.00,min:0,max:0), satisfied:2.4(med:0.0,min:0,max:11)]
+
+  → send message                   [  15] (  6.5%)
+    [action1_dur:157(med:96,min:5,max:459), action2_dur:1(med:1,min:1,max:2)] [action1@frame:1232(med:1242,min:133,max:2193), action2@frame:1389(med:1538,min:229,max:2439)] [rooms:1.8(med:2.0,min:0,max:4), held:1.8(med:1.0,min:0,max:4), container:0.00(med:0.00,min:0,max:0), satisfied:5.0(med:5.0,min:0,max:12)]
+
+  → explore                        [  13] (  5.6%)
+    [action1_dur:212(med:150,min:40,max:661), action2_dur:84(med:71,min:32,max:192)] [action1@frame:1335(med:1625,min:105,max:2356), action2@frame:1547(med:1668,min:260,max:2443)] [rooms:1.3(med:1.0,min:0,max:3), held:1.0(med:1.0,min:0,max:2), container:0.00(med:0.00,min:0,max:0), satisfied:6.1(med:7.0,min:0,max:12)]
+
+  → go grasp container             [   4] (  1.7%)
+    [action1_dur:95(med:94,min:44,max:148), action2_dur:292(med:328,min:169,max:343)] [action1@frame:302(med:297,min:128,max:488), action2@frame:398(med:391,min:172,max:636)] [rooms:1.2(med:1.0,min:1,max:2), held:0.8(med:1.0,min:0,max:1), container:0.00(med:0.00,min:0,max:0), satisfied:0.2(med:0.0,min:0,max:1)]
+
+
+================================================================================
+FROM: go to
+Total transitions: 209
+Overall: [action1_dur:149(med:93,min:0,max:883), action2_dur:79(med:60,min:1,max:1688)] [action1@frame:710(med:329,min:0,max:2897), action2@frame:859(med:488,min:0,max:2984)] [rooms:1.2(med:1.0,min:0,max:6), held:0.6(med:0.0,min:0,max:4), container:0.00(med:0.00,min:0,max:0), satisfied:2.8(med:0.0,min:0,max:13)]
+================================================================================
+
+  → send message                   [  86] ( 41.1%)
+    [action1_dur:89(med:8,min:0,max:883), action2_dur:1(med:1,min:1,max:2)] [action1@frame:369(med:1,min:0,max:2837), action2@frame:458(med:40,min:0,max:2970)] [rooms:0.8(med:0.0,min:0,max:6), held:0.4(med:0.0,min:0,max:4), container:0.00(med:0.00,min:0,max:0), satisfied:1.5(med:0.0,min:0,max:12)]
+
+  → explore                        [  58] ( 27.8%)
+    [action1_dur:158(med:99,min:0,max:714), action2_dur:88(med:83,min:32,max:228)] [action1@frame:884(med:468,min:0,max:2897), action2@frame:1043(med:542,min:0,max:2984)] [rooms:1.5(med:1.0,min:0,max:5), held:0.4(med:0.0,min:0,max:3), container:0.00(med:0.00,min:0,max:0), satisfied:3.5(med:0.0,min:0,max:12)]
+
+  → go grasp target                [  34] ( 16.3%)
+    [action1_dur:220(med:140,min:15,max:820), action2_dur:125(med:110,min:5,max:395)] [action1@frame:1086(med:856,min:19,max:2645), action2@frame:1306(med:1206,min:74,max:2931)] [rooms:1.4(med:1.0,min:0,max:4), held:0.8(med:1.0,min:0,max:3), container:0.00(med:0.00,min:0,max:0), satisfied:4.3(med:4.0,min:0,max:13)]
+
+  → transport                      [  16] (  7.7%)
+    [action1_dur:289(med:280,min:103,max:622), action2_dur:254(med:198,min:61,max:715)] [action1@frame:1357(med:1184,min:694,max:2451), action2@frame:1646(med:1520,min:911,max:2814)] [rooms:2.0(med:2.0,min:0,max:5), held:2.8(med:2.5,min:1,max:4), container:0.00(med:0.00,min:0,max:0), satisfied:4.9(med:4.5,min:0,max:12)]
+
+  → go grasp container             [  15] (  7.2%)
+    [action1_dur:142(med:123,min:6,max:427), action2_dur:235(med:125,min:32,max:1688)] [action1@frame:454(med:250,min:1,max:1764), action2@frame:596(med:489,min:7,max:1887)] [rooms:1.1(med:1.0,min:0,max:3), held:0.1(med:0.0,min:0,max:1), container:0.00(med:0.00,min:0,max:0), satisfied:2.3(med:1.0,min:0,max:10)]
+
+
+================================================================================
+FROM: put into container
+Total transitions: 128
+Overall: [action1_dur:139(med:146,min:90,max:146), action2_dur:100(med:76,min:1,max:432)] [action1@frame:1095(med:922,min:53,max:2527), action2@frame:1234(med:1048,min:199,max:2650)] [rooms:1.4(med:1.0,min:0,max:4), held:1.9(med:2.0,min:1,max:3), container:0.00(med:0.00,min:0,max:0), satisfied:2.9(med:2.0,min:0,max:12)]
+================================================================================
+
+  → go grasp target                [  88] ( 68.8%)
+    [action1_dur:140(med:146,min:90,max:146), action2_dur:89(med:70,min:5,max:378)] [action1@frame:1077(med:917,min:53,max:2527), action2@frame:1216(med:1047,min:199,max:2650)] [rooms:1.3(med:1.0,min:0,max:4), held:1.9(med:2.0,min:1,max:3), container:0.00(med:0.00,min:0,max:0), satisfied:2.7(med:2.0,min:0,max:8)]
+
+  → go to                          [  14] ( 10.9%)
+    [action1_dur:139(med:146,min:123,max:146), action2_dur:140(med:109,min:12,max:379)] [action1@frame:718(med:471,min:141,max:1818), action2@frame:857(med:608,min:287,max:1964)] [rooms:0.9(med:1.0,min:0,max:2), held:1.6(med:1.5,min:1,max:3), container:0.00(med:0.00,min:0,max:0), satisfied:1.6(med:0.0,min:0,max:7)]
+
+  → explore                        [  10] (  7.8%)
+    [action1_dur:137(med:146,min:123,max:146), action2_dur:90(med:92,min:32,max:141)] [action1@frame:1092(med:909,min:204,max:2039), action2@frame:1229(med:1032,min:350,max:2165)] [rooms:1.2(med:1.0,min:0,max:4), held:2.2(med:2.0,min:1,max:3), container:0.00(med:0.00,min:0,max:0), satisfied:3.7(med:3.5,min:0,max:9)]
+
+  → send message                   [   8] (  6.2%)
+    [action1_dur:145(med:146,min:141,max:146), action2_dur:1(med:1,min:1,max:2)] [action1@frame:1344(med:1232,min:452,max:2215), action2@frame:1489(med:1376,min:598,max:2361)] [rooms:2.2(med:2.0,min:1,max:4), held:1.8(med:1.5,min:1,max:3), container:0.00(med:0.00,min:0,max:0), satisfied:5.0(med:2.0,min:0,max:12)]
+
+  → transport                      [   8] (  6.2%)
+    [action1_dur:137(med:138,min:124,max:146), action2_dur:285(med:281,min:123,max:432)] [action1@frame:1701(med:2069,min:722,max:2429), action2@frame:1838(med:2200,min:868,max:2566)] [rooms:2.0(med:2.0,min:1,max:4), held:2.9(med:3.0,min:2,max:3), container:0.00(med:0.00,min:0,max:0), satisfied:4.2(med:5.0,min:0,max:8)]
+
+
+================================================================================
+FROM: send message
+Total transitions: 196
+Overall: [action1_dur:1(med:1,min:1,max:2), action2_dur:166(med:101,min:4,max:883)] [action1@frame:1064(med:819,min:0,max:2998), action2@frame:1065(med:820,min:1,max:2999)] [rooms:1.5(med:1.0,min:0,max:6), held:0.5(med:0.0,min:0,max:4), container:0.00(med:0.00,min:0,max:0), satisfied:4.1(med:2.0,min:0,max:13)]
+================================================================================
+
+  → go to                          [  87] ( 44.4%)
+    [action1_dur:1(med:1,min:1,max:2), action2_dur:180(med:107,min:4,max:883)] [action1@frame:1027(med:684,min:0,max:2980), action2@frame:1028(med:686,min:1,max:2981)] [rooms:1.6(med:1.0,min:0,max:5), held:0.5(med:0.0,min:0,max:4), container:0.00(med:0.00,min:0,max:0), satisfied:3.9(med:1.0,min:0,max:13)]
+
+  → explore                        [  43] ( 21.9%)
+    [action1_dur:1(med:1,min:1,max:2), action2_dur:101(med:74,min:32,max:425)] [action1@frame:941(med:197,min:0,max:2998), action2@frame:942(med:198,min:1,max:2999)] [rooms:0.9(med:0.0,min:0,max:4), held:0.2(med:0.0,min:0,max:2), container:0.00(med:0.00,min:0,max:0), satisfied:4.2(med:0.0,min:0,max:13)]
+
+  → go grasp target                [  41] ( 20.9%)
+    [action1_dur:1(med:1,min:1,max:2), action2_dur:196(med:122,min:5,max:664)] [action1@frame:1277(med:1357,min:76,max:2970), action2@frame:1278(med:1358,min:77,max:2971)] [rooms:1.9(med:2.0,min:0,max:6), held:0.4(med:0.0,min:0,max:3), container:0.00(med:0.00,min:0,max:0), satisfied:4.8(med:4.0,min:0,max:11)]
+
+  → go grasp container             [  14] (  7.1%)
+    [action1_dur:1(med:1,min:1,max:2), action2_dur:135(med:100,min:18,max:660)] [action1@frame:772(med:334,min:0,max:2609), action2@frame:773(med:336,min:1,max:2610)] [rooms:1.0(med:1.0,min:0,max:4), held:0.1(med:0.0,min:0,max:1), container:0.00(med:0.00,min:0,max:0), satisfied:3.0(med:0.0,min:0,max:12)]
+
+  → transport                      [   7] (  3.6%)
+    [action1_dur:1(med:1,min:1,max:2), action2_dur:313(med:322,min:133,max:484)] [action1@frame:1304(med:1198,min:380,max:2180), action2@frame:1305(med:1199,min:381,max:2181)] [rooms:1.7(med:2.0,min:1,max:2), held:2.3(med:2.0,min:1,max:4), container:0.00(med:0.00,min:0,max:0), satisfied:4.9(med:4.0,min:0,max:10)]
+
+  → put into container             [   4] (  2.0%)
+    [action1_dur:1(med:1,min:1,max:2), action2_dur:140(med:144,min:124,max:146)] [action1@frame:1610(med:1846,min:550,max:2199), action2@frame:1612(med:1848,min:551,max:2200)] [rooms:2.0(med:1.5,min:1,max:4), held:2.0(med:2.0,min:1,max:3), container:0.00(med:0.00,min:0,max:0), satisfied:5.2(med:5.5,min:2,max:8)]
+
+
+================================================================================
+FROM: transport
+Total transitions: 69
+Overall: [action1_dur:313(med:290,min:15,max:801), action2_dur:157(med:54,min:1,max:714)] [action1@frame:1496(med:1408,min:96,max:2942), action2@frame:1809(med:1804,min:141,max:2998)] [rooms:1.8(med:2.0,min:0,max:5), held:0.0(med:0.0,min:0,max:0), container:0.00(med:0.00,min:0,max:0), satisfied:7.9(med:9.0,min:1,max:13)]
+================================================================================
+
+  → send message                   [  25] ( 36.2%)
+    [action1_dur:316(med:300,min:64,max:715), action2_dur:1(med:1,min:1,max:2)] [action1@frame:1613(med:1638,min:533,max:2566), action2@frame:1929(med:1991,min:935,max:2998)] [rooms:1.8(med:2.0,min:0,max:4), held:0.0(med:0.0,min:0,max:0), container:0.00(med:0.00,min:0,max:0), satisfied:8.4(med:9.0,min:4,max:13)]
+
+  → go grasp target                [  18] ( 26.1%)
+    [action1_dur:329(med:322,min:15,max:801), action2_dur:253(med:243,min:5,max:591)] [action1@frame:1649(med:1676,min:414,max:2942), action2@frame:1978(med:1989,min:755,max:2974)] [rooms:2.1(med:2.0,min:1,max:4), held:0.0(med:0.0,min:0,max:0), container:0.00(med:0.00,min:0,max:0), satisfied:8.4(med:9.0,min:3,max:12)]
+
+  → go grasp container             [  11] ( 15.9%)
+    [action1_dur:224(med:250,min:40,max:457), action2_dur:281(med:294,min:103,max:545)] [action1@frame:1142(med:926,min:96,max:2423), action2@frame:1366(med:1207,min:141,max:2463)] [rooms:2.0(med:2.0,min:0,max:5), held:0.0(med:0.0,min:0,max:0), container:0.00(med:0.00,min:0,max:0), satisfied:5.9(med:6.0,min:1,max:10)]
+
+  → go to                          [   8] ( 11.6%)
+    [action1_dur:352(med:302,min:145,max:687), action2_dur:348(med:282,min:85,max:714)] [action1@frame:1345(med:1202,min:705,max:2241), action2@frame:1698(med:1674,min:1006,max:2492)] [rooms:1.5(med:1.5,min:0,max:3), held:0.0(med:0.0,min:0,max:0), container:0.00(med:0.00,min:0,max:0), satisfied:7.5(med:8.5,min:2,max:11)]
+
+  → explore                        [   7] ( 10.1%)
+    [action1_dur:357(med:418,min:124,max:587), action2_dur:57(med:42,min:32,max:147)] [action1@frame:1409(med:1345,min:381,max:2181), action2@frame:1766(med:1763,min:514,max:2665)] [rooms:0.9(med:1.0,min:0,max:2), held:0.0(med:0.0,min:0,max:0), container:0.00(med:0.00,min:0,max:0), satisfied:8.4(med:10.0,min:2,max:11)]
+

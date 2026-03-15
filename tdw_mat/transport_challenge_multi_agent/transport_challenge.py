@@ -139,7 +139,7 @@ class TransportChallenge(AssetCachedController):
                               container_room_index: int = None, target_objects_room_index: int = None,
                               goal_room_index: int = None, task = None,
                               replicants: Union[int, List[Union[int, np.ndarray, Dict[str, float]]]] = 2,
-                              lighting: bool = True, random_seed: int = None, data_prefix = 'dataset/dataset_train') -> None:
+                              lighting: bool = True, random_seed: int = None, data_prefix = 'dataset/test_2') -> None:
         """
         Start a trial in a floorplan scene.
 
@@ -207,12 +207,27 @@ class TransportChallenge(AssetCachedController):
         food or stuff
         """
         self.communicate({"$type": "set_floorplan_roof", "show": False})
+        
+        # Standard path
         load_path = os.path.join(self.data_prefix, f"{self.scene}_{self.layout}.json")
+        if not os.path.exists(load_path):
+            # Fallback to _2 suffix (observed in some datasets like 10_objs)
+            load_path = os.path.join(self.data_prefix, f"{self.scene}_{self.layout}_2.json")
+            
         with open(load_path, "r") as f: scene = json.load(f)
-        if os.path.exists(os.path.join(self.data_prefix, f"{self.scene}_{self.layout}_metadata.json")):
-            load_count_and_position_path = os.path.join(self.data_prefix, f"{self.scene}_{self.layout}_metadata.json")
+        
+        # Metadata loading logic with fallback
+        metadata_path = os.path.join(self.data_prefix, f"{self.scene}_{self.layout}_metadata.json")
+        metadata_path_2 = os.path.join(self.data_prefix, f"{self.scene}_{self.layout}_2_metadata.json")
+        count_path = os.path.join(self.data_prefix, f"{self.scene}_{self.layout}_count.json")
+        
+        if os.path.exists(metadata_path):
+            load_count_and_position_path = metadata_path
+        elif os.path.exists(metadata_path_2):
+            load_count_and_position_path = metadata_path_2
         else:
-            load_count_and_position_path = os.path.join(self.data_prefix, f"{self.scene}_{self.layout}_count.json")
+            load_count_and_position_path = count_path
+            
         with open(load_count_and_position_path, "r") as f: count_and_position = json.load(f)
         common_sense_path = os.path.join(self.data_prefix, "list.json")
         with open(common_sense_path, "r") as f:

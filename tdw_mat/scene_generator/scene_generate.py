@@ -18,12 +18,15 @@ import os
 
 def check_maximum_count(obj_name, current_count, container_limit = 6, round = 0):
     hard_bar = 4 if round == 0 else 6
+    if target_limit > 10:
+        hard_bar = int(hard_bar * (target_limit / 10))
+        
     if obj_name in object_place['food']['target']: 
-        if current_count["count_target_food"] >= 10: return False
+        if current_count["count_target_food"] >= target_limit: return False
     if obj_name in object_place['food']['container']:
         if current_count["count_container_food"] >= container_limit: return False
     if obj_name in object_place['stuff']['target']:
-        if current_count["count_target_stuff"] >= 10: return False
+        if current_count["count_target_stuff"] >= target_limit: return False
     if obj_name in object_place['stuff']['container']:
         if current_count["count_container_stuff"] >= container_limit: return False
     if obj_name in object_place['food']['target_fruit']:
@@ -59,14 +62,73 @@ FLOORPLAN_SCENE_NAME = settings[0]
 FLOORPLAN_LAYOUT = int(settings[1])
 scene_id = int(settings[2])
 dataset_prefix = settings[3]
+target_limit = int(settings[4]) if len(settings) > 4 else 10
+task_mode = settings[5] if len(settings) > 5 else 'all'
 print("FLOORPLAN_SCENE_NAME:", FLOORPLAN_SCENE_NAME)
 print("FLOORPLAN_LAYOUT:", FLOORPLAN_LAYOUT)
 print("scene_id:", scene_id)
+print("target_limit:", target_limit)
+print("task_mode:", task_mode)
 
 container_limit, container_room_limit = 0, 0
 if scene_id == 0: container_limit, container_room_limit = 5, 2
 if scene_id == 1: container_limit, container_room_limit = 2, 1
 if scene_id == 2: container_limit, container_room_limit = 4, 1
+
+# Scale container limits based on target_limit
+if target_limit > 10:
+    ratio = target_limit / 10
+    container_limit = int(container_limit * ratio)
+    container_room_limit = max(container_room_limit + 1, int(container_room_limit * ratio))
+    print(f"Scaled container limits: total={container_limit}, per_room={container_room_limit}")
+
+def check_maximum_count(obj_name, current_count, container_limit = 6, round = 0):
+    # Filter based on task_mode
+    if task_mode == 'food':
+        if obj_name in object_place['stuff']['target']: return False
+        if obj_name in object_place['stuff']['container']: return False
+    elif task_mode == 'stuff':
+        if obj_name in object_place['food']['target']: return False
+        if obj_name in object_place['food']['container']: return False
+
+    hard_bar = 4 if round == 0 else 6
+    if target_limit > 10:
+        hard_bar = int(hard_bar * (target_limit / 10))
+        
+    if obj_name in object_place['food']['target']: 
+        if current_count["count_target_food"] >= target_limit: return False
+    if obj_name in object_place['food']['container']:
+        if current_count["count_container_food"] >= container_limit: return False
+    if obj_name in object_place['stuff']['target']:
+        if current_count["count_target_stuff"] >= target_limit: return False
+    if obj_name in object_place['stuff']['container']:
+        if current_count["count_container_stuff"] >= container_limit: return False
+    if obj_name in object_place['food']['target_fruit']:
+        if current_count["count_target_food_fruit"] >= hard_bar: return False
+    if obj_name in object_place['food']['target_bread']:
+        if current_count["count_target_food_bread"] >= hard_bar: return False
+    if obj_name in object_place['stuff']['target_office']:
+        if current_count["count_target_stuff_office"] >= hard_bar: return False
+    if obj_name in object_place['stuff']['target_common']:
+        if current_count["count_target_stuff_common"] >= hard_bar: return False
+    return True
+
+def update_maximum_count(obj_name, current_count):
+    if obj_name in object_place['food']['target']: current_count["count_target_food"] += 1
+    if obj_name in object_place['food']['container']: current_count["count_container_food"] += 1
+    if obj_name in object_place['stuff']['target']: current_count["count_target_stuff"] += 1
+    if obj_name in object_place['stuff']['container']: current_count["count_container_stuff"] += 1
+    if obj_name in object_place['food']['target_fruit']: current_count["count_target_food_fruit"] += 1
+    if obj_name in object_place['food']['target_bread']: current_count["count_target_food_bread"] += 1
+    if obj_name in object_place['stuff']['target_office']: current_count["count_target_stuff_office"] += 1
+    if obj_name in object_place['stuff']['target_common']: current_count["count_target_stuff_common"] += 1
+
+def check_map(x, z, occ_map, positions, threshold = 0.65):
+    for i in range(occ_map.shape[0]):
+        for j in range(occ_map.shape[1]):
+            if occ_map[i, j] == 1 and (positions[i, j][0] - positions[x, z][0]) ** 2 + (positions[i, j][1] - positions[x, z][1]) ** 2 < threshold ** 2:
+                return False
+    return True
 
 #start simulator
 c = Controller(port = 1077)
@@ -93,6 +155,14 @@ os.makedirs("./dataset/", exist_ok=True)
 os.makedirs(f"./dataset/{dataset_prefix}/", exist_ok=True)
 
 random_object_list_on_floor = object_place['floor_objects']
+
+# Filter random_object_list_on_floor based on task_mode
+if task_mode == 'food':
+    random_object_list_on_floor = [obj for obj in random_object_list_on_floor if obj in object_place['food']['target'] or obj in object_place['food']['container']]
+    print(f"Filtered floor objects for food task: {len(random_object_list_on_floor)} objects")
+elif task_mode == 'stuff':
+    random_object_list_on_floor = [obj for obj in random_object_list_on_floor if obj in object_place['stuff']['target'] or obj in object_place['stuff']['container']]
+    print(f"Filtered floor objects for stuff task: {len(random_object_list_on_floor)} objects")
 
 commands_init_scene = [{"$type": "set_screen_size", "width": 1920, "height": 1080}] # Set screen size
 commands_init_scene.extend(floorplan.commands)

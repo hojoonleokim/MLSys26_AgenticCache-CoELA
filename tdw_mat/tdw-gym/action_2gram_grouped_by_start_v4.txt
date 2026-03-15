@@ -1,0 +1,159 @@
+================================================================================
+2-GRAM ACTION TRANSITIONS GROUPED BY STARTING ACTION
+(No Consecutive Duplicates, with Metadata) [v4: +known_targets, +known_containers, +unexplored_rooms]
+================================================================================
+
+
+================================================================================
+FROM: go grasp target
+Total transitions: 39
+Overall: [action1_dur:116.2(med:77,min:5,max:430), action2_dur:180.8(med:146,min:0,max:651)] [action1@frame:1178.8(med:1236,std:793.1,min:44,max:2880), action2@frame:1295.0(med:1357,std:805.8,min:118,max:2896)] [rooms:3(med:3,min:1,max:6), held:0.5(med:1,min:0,max:1), container:0.5(med:1,min:0,max:1), satisfied:3.6(med:4,min:0,max:9), known_targets:1.9(med:2,min:1,max:6), known_containers:1.1(med:1,min:0,max:3), unexplored_rooms:3(med:3,min:0,max:5)]
+================================================================================
+
+  → transport                      [  14] ( 35.9%)
+    [action1_dur:136.6(med:117,min:5,max:430), action2_dur:327.8(med:302,min:32,max:651)] [action1@frame:1314.1(med:1331,std:779.9,min:141,max:2880), action2@frame:1450.8(med:1380,std:776.5,min:356,max:2896)] [rooms:3.2(med:3,min:1,max:6), held:0.4(med:0,min:0,max:1), container:0.4(med:0,min:0,max:1), satisfied:3.6(med:3.5,min:0,max:8), known_targets:2.4(med:2,min:1,max:6), known_containers:1.1(med:1,min:0,max:3), unexplored_rooms:2.8(med:3,min:0,max:5)]
+
+  → put into container             [  12] ( 30.8%)
+    [action1_dur:97.9(med:62,min:5,max:380), action2_dur:139.2(med:146,min:123,max:146)] [action1@frame:924.1(med:931.5,std:561.3,min:125,max:1894), action2@frame:1022(med:978,std:607.8,min:158,max:2078)] [rooms:2.8(med:3,min:1,max:6), held:1(med:1,min:1,max:1), container:1(med:1,min:1,max:1), satisfied:2.8(med:3,min:0,max:6), known_targets:1.8(med:2,min:1,max:3), known_containers:1.3(med:1.5,min:0,max:3), unexplored_rooms:3.2(med:3,min:0,max:5)]
+
+  → go to                          [   5] ( 12.8%)
+    [action1_dur:168.4(med:182,min:54,max:318), action2_dur:137.8(med:109,min:27,max:308)] [action1@frame:944.4(med:598,std:807.5,min:64,max:2091), action2@frame:1112.8(med:820,std:853.4,min:118,max:2409)] [rooms:2.6(med:2,min:1,max:5), held:0.2(med:0,min:0,max:1), container:0.2(med:0,min:0,max:1), satisfied:3.2(med:2,min:0,max:7), known_targets:2(med:2,min:1,max:4), known_containers:0.8(med:0,min:0,max:3), unexplored_rooms:3.4(med:4,min:1,max:5)]
+
+  → send message                   [   4] ( 10.3%)
+    [action1_dur:50.2(med:41,min:16,max:103), action2_dur:1(med:1,min:1,max:1)] [action1@frame:1688.2(med:2055,std:1004.9,min:87,max:2556), action2@frame:1738.5(med:2084.5,std:1004.6,min:151,max:2634)] [rooms:3.2(med:3.5,min:1,max:5), held:0.2(med:0,min:0,max:1), container:0.2(med:0,min:0,max:1), satisfied:6(med:7.5,min:0,max:9), known_targets:1(med:1,min:1,max:1), known_containers:0.2(med:0,min:0,max:1), unexplored_rooms:2.8(med:2.5,min:1,max:5)]
+
+  → go grasp container             [   2] (  5.1%)
+    [action1_dur:123(med:123,min:77,max:169), action2_dur:30(med:30,min:5,max:55)] [action1@frame:631(med:631,std:587.0,min:44,max:1218), action2@frame:754(med:754,std:633.0,min:121,max:1387)] [rooms:2.5(med:2.5,min:1,max:4), held:0(med:0,min:0,max:0), container:0(med:0,min:0,max:0), satisfied:2.5(med:2.5,min:0,max:5), known_targets:1.5(med:1.5,min:1,max:2), known_containers:2(med:2,min:1,max:3), unexplored_rooms:3.5(med:3.5,min:2,max:5)]
+
+  → explore                        [   2] (  5.1%)
+    [action1_dur:77.5(med:77.5,min:74,max:81), action2_dur:19(med:19,min:0,max:38)] [action1@frame:1874(med:1874,std:407.0,min:1467,max:2281), action2@frame:1951.5(med:1951.5,std:410.5,min:1541,max:2362)] [rooms:3.5(med:3.5,min:3,max:4), held:0.5(med:0.5,min:0,max:1), container:0.5(med:0.5,min:0,max:1), satisfied:6.5(med:6.5,min:5,max:8), known_targets:2(med:2,min:1,max:3), known_containers:1(med:1,min:1,max:1), unexplored_rooms:2.5(med:2.5,min:2,max:3)]
+
+
+================================================================================
+FROM: go to
+Total transitions: 26
+Overall: [action1_dur:177.5(med:156.5,min:12,max:378), action2_dur:112.2(med:70,min:1,max:373)] [action1@frame:1232.7(med:1054,std:925.1,min:0,max:2783), action2@frame:1410.2(med:1295.5,std:953.9,min:12,max:2927)] [rooms:2.7(med:2.5,min:1,max:5), held:0.6(med:0.5,min:0,max:2), container:0.3(med:0,min:0,max:1), satisfied:4.5(med:4.5,min:0,max:10), known_targets:0.5(med:0,min:0,max:4), known_containers:0.7(med:0.5,min:0,max:2), unexplored_rooms:3.3(med:3.5,min:1,max:5)]
+================================================================================
+
+  → explore                        [  13] ( 50.0%)
+    [action1_dur:194.7(med:158,min:12,max:378), action2_dur:77.7(med:55,min:32,max:264)] [action1@frame:1617(med:1858,std:881.4,min:0,max:2783), action2@frame:1811.7(med:1965,std:911.9,min:12,max:2927)] [rooms:3.4(med:4,min:1,max:5), held:0.5(med:0,min:0,max:1), container:0.4(med:0,min:0,max:1), satisfied:6.2(med:8,min:0,max:9), known_targets:0(med:0,min:0,max:0), known_containers:0.8(med:1,min:0,max:2), unexplored_rooms:2.6(med:2,min:1,max:5)]
+
+  → go grasp target                [   5] ( 19.2%)
+    [action1_dur:203.2(med:214,min:68,max:338), action2_dur:146.4(med:116,min:81,max:313)] [action1@frame:860.8(med:733,std:710.0,min:73,max:2067), action2@frame:1064(med:1071,std:723.7,min:141,max:2281)] [rooms:2(med:2,min:1,max:3), held:0.2(med:0,min:0,max:1), container:0.2(med:0,min:0,max:1), satisfied:2.6(med:2,min:0,max:8), known_targets:1(med:0,min:0,max:4), known_containers:0.6(med:0,min:0,max:2), unexplored_rooms:4(med:4,min:3,max:5)]
+
+  → go grasp container             [   3] ( 11.5%)
+    [action1_dur:137.7(med:155,min:90,max:168), action2_dur:195(med:207,min:70,max:308)] [action1@frame:363.3(med:152,std:323.2,min:118,max:820), action2@frame:501(med:320,std:289.8,min:273,max:910)] [rooms:1.3(med:1,min:1,max:2), held:1(med:1,min:1,max:1), container:0(med:0,min:0,max:0), satisfied:1.3(med:0,min:0,max:4), known_targets:0(med:0,min:0,max:0), known_containers:0(med:0,min:0,max:0), unexplored_rooms:4.7(med:5,min:4,max:5)]
+
+  → send message                   [   2] (  7.7%)
+    [action1_dur:177(med:177,min:145,max:209), action2_dur:1(med:1,min:1,max:1)] [action1@frame:1382.5(med:1382.5,std:1252.5,min:130,max:2635), action2@frame:1559.5(med:1559.5,std:1284.5,min:275,max:2844)] [rooms:3(med:3,min:1,max:5), held:0(med:0,min:0,max:0), container:0(med:0,min:0,max:0), satisfied:5(med:5,min:0,max:10), known_targets:2(med:2,min:0,max:4), known_containers:0(med:0,min:0,max:0), unexplored_rooms:3(med:3,min:1,max:5)]
+
+  → transport                      [   2] (  7.7%)
+    [action1_dur:96(med:96,min:27,max:165), action2_dur:221.5(med:221.5,min:70,max:373)] [action1@frame:547.5(med:547.5,std:104.5,min:443,max:652), action2@frame:643.5(med:643.5,std:173.5,min:470,max:817)] [rooms:1(med:1,min:1,max:1), held:1.5(med:1.5,min:1,max:2), container:0.5(med:0.5,min:0,max:1), satisfied:1.5(med:1.5,min:1,max:2), known_targets:1(med:1,min:0,max:2), known_containers:1(med:1,min:0,max:2), unexplored_rooms:5(med:5,min:5,max:5)]
+
+  → put into container             [   1] (  3.8%)
+    [action1_dur:109(med:109,min:109,max:109), action2_dur:146(med:146,min:146,max:146)] [action1@frame:1774(med:1774,std:0.0,min:1774,max:1774), action2@frame:1883(med:1883,std:0.0,min:1883,max:1883)] [rooms:4(med:4,min:4,max:4), held:2(med:2,min:2,max:2), container:1(med:1,min:1,max:1), satisfied:6(med:6,min:6,max:6), known_targets:3(med:3,min:3,max:3), known_containers:1(med:1,min:1,max:1), unexplored_rooms:2(med:2,min:2,max:2)]
+
+
+================================================================================
+FROM: explore
+Total transitions: 25
+Overall: [action1_dur:81.4(med:65,min:0,max:264), action2_dur:127.8(med:106,min:1,max:355)] [action1@frame:1199.3(med:1103,std:1050.9,min:0,max:2927), action2@frame:1280.7(med:1155,std:1041.6,min:44,max:2982)] [rooms:3.1(med:3,min:1,max:6), held:0.4(med:0,min:0,max:1), container:0.3(med:0,min:0,max:1), satisfied:4.4(med:5,min:0,max:9), known_targets:0.2(med:0,min:0,max:2), known_containers:0.8(med:1,min:0,max:3), unexplored_rooms:2.9(med:3,min:0,max:5)]
+================================================================================
+
+  → go to                          [  12] ( 48.0%)
+    [action1_dur:87.2(med:71,min:0,max:264), action2_dur:181.4(med:151.5,min:68,max:355)] [action1@frame:1381.8(med:1505,std:963.8,min:0,max:2717), action2@frame:1469(med:1660.5,std:962.1,min:63,max:2783)] [rooms:3.1(med:3.5,min:1,max:5), held:0.5(med:0.5,min:0,max:1), container:0.4(med:0,min:0,max:1), satisfied:5.1(med:6.5,min:0,max:9), known_targets:0(med:0,min:0,max:0), known_containers:0.8(med:1,min:0,max:2), unexplored_rooms:2.9(med:2.5,min:1,max:5)]
+
+  → go grasp target                [   6] ( 24.0%)
+    [action1_dur:88.3(med:56,min:32,max:261), action2_dur:89(med:70.5,min:18,max:182)] [action1@frame:287(med:6,std:564.1,min:0,max:1541), action2@frame:375.3(med:152,std:544.2,min:44,max:1579)] [rooms:1.7(med:1,min:1,max:4), held:0.2(med:0,min:0,max:1), container:0.2(med:0,min:0,max:1), satisfied:1.2(med:0,min:0,max:7), known_targets:0.7(med:0.5,min:0,max:2), known_containers:0.3(med:0,min:0,max:1), unexplored_rooms:4.3(med:5,min:2,max:5)]
+
+  → send message                   [   3] ( 12.0%)
+    [action1_dur:56.3(med:55,min:49,max:65), action2_dur:1(med:1,min:1,max:1)] [action1@frame:2204.3(med:2799,std:933.0,min:887,max:2927), action2@frame:2260.7(med:2848,std:927.0,min:952,max:2982)] [rooms:4.7(med:6,min:2,max:6), held:0.3(med:0,min:0,max:1), container:0.3(med:0,min:0,max:1), satisfied:7.7(med:9,min:5,max:9), known_targets:0(med:0,min:0,max:0), known_containers:1(med:1,min:0,max:2), unexplored_rooms:1.3(med:0,min:0,max:4)]
+
+  → go grasp container             [   3] ( 12.0%)
+    [action1_dur:78(med:73,min:63,max:98), action2_dur:142.3(med:98,min:52,max:277)] [action1@frame:858.7(med:843,std:707.6,min:0,max:1733), action2@frame:936.7(med:941,std:703.4,min:73,max:1796)] [rooms:3.7(med:4,min:1,max:6), held:0(med:0,min:0,max:0), container:0(med:0,min:0,max:0), satisfied:3.3(med:4,min:0,max:6), known_targets:0.7(med:0,min:0,max:2), known_containers:1.7(med:2,min:0,max:3), unexplored_rooms:2.3(med:2,min:0,max:5)]
+
+  → transport                      [   1] (  4.0%)
+    [action1_dur:55(med:55,min:55,max:55), action2_dur:55(med:55,min:55,max:55)] [action1@frame:2490(med:2490,std:0.0,min:2490,max:2490), action2@frame:2545(med:2545,std:0.0,min:2545,max:2545)] [rooms:5(med:5,min:5,max:5), held:1(med:1,min:1,max:1), container:0(med:0,min:0,max:0), satisfied:8(med:8,min:8,max:8), known_targets:0(med:0,min:0,max:0), known_containers:1(med:1,min:1,max:1), unexplored_rooms:1(med:1,min:1,max:1)]
+
+
+================================================================================
+FROM: put into container
+Total transitions: 18
+Overall: [action1_dur:140.3(med:146,min:123,max:146), action2_dur:111.8(med:66.5,min:1,max:487)] [action1@frame:989.1(med:947.5,std:611.8,min:158,max:2078), action2@frame:1129.4(med:1082,std:613.3,min:281,max:2224)] [rooms:3.1(med:3,min:1,max:6), held:2(med:2,min:2,max:2), container:1(med:1,min:1,max:1), satisfied:2.9(med:3,min:0,max:6), known_targets:1.4(med:1,min:0,max:4), known_containers:1.3(med:1,min:0,max:3), unexplored_rooms:2.9(med:3,min:0,max:5)]
+================================================================================
+
+  → go grasp target                [  13] ( 72.2%)
+    [action1_dur:140.7(med:146,min:123,max:146), action2_dur:61.7(med:50,min:5,max:159)] [action1@frame:919.4(med:677,std:630.4,min:158,max:2078), action2@frame:1060.1(med:800,std:633.4,min:281,max:2224)] [rooms:2.9(med:3,min:1,max:6), held:2(med:2,min:2,max:2), container:1(med:1,min:1,max:1), satisfied:2.5(med:1,min:0,max:6), known_targets:1.7(med:1,min:1,max:4), known_containers:1.7(med:2,min:0,max:3), unexplored_rooms:3.1(med:3,min:0,max:5)]
+
+  → transport                      [   2] ( 11.1%)
+    [action1_dur:140(med:140,min:134,max:146), action2_dur:486(med:486,min:485,max:487)] [action1@frame:1651(med:1651,std:247.0,min:1404,max:1898), action2@frame:1791(med:1791,std:253.0,min:1538,max:2044)] [rooms:5(med:5,min:5,max:5), held:2(med:2,min:2,max:2), container:1(med:1,min:1,max:1), satisfied:5(med:5,min:4,max:6), known_targets:0.5(med:0.5,min:0,max:1), known_containers:0.5(med:0.5,min:0,max:1), unexplored_rooms:1(med:1,min:1,max:1)]
+
+  → explore                        [   1] (  5.6%)
+    [action1_dur:146(med:146,min:146,max:146), action2_dur:72(med:72,min:72,max:72)] [action1@frame:652(med:652,std:0.0,min:652,max:652), action2@frame:798(med:798,std:0.0,min:798,max:798)] [rooms:2(med:2,min:2,max:2), held:2(med:2,min:2,max:2), container:1(med:1,min:1,max:1), satisfied:3(med:3,min:3,max:3), known_targets:0(med:0,min:0,max:0), known_containers:0(med:0,min:0,max:0), unexplored_rooms:4(med:4,min:4,max:4)]
+
+  → go to                          [   1] (  5.6%)
+    [action1_dur:146(med:146,min:146,max:146), action2_dur:165(med:165,min:165,max:165)] [action1@frame:506(med:506,std:0.0,min:506,max:506), action2@frame:652(med:652,std:0.0,min:652,max:652)] [rooms:1(med:1,min:1,max:1), held:2(med:2,min:2,max:2), container:1(med:1,min:1,max:1), satisfied:1(med:1,min:1,max:1), known_targets:0(med:0,min:0,max:0), known_containers:0(med:0,min:0,max:0), unexplored_rooms:5(med:5,min:5,max:5)]
+
+  → send message                   [   1] (  5.6%)
+    [action1_dur:125(med:125,min:125,max:125), action2_dur:1(med:1,min:1,max:1)] [action1@frame:1392(med:1392,std:0.0,min:1392,max:1392), action2@frame:1517(med:1517,std:0.0,min:1517,max:1517)] [rooms:5(med:5,min:5,max:5), held:2(med:2,min:2,max:2), container:1(med:1,min:1,max:1), satisfied:5(med:5,min:5,max:5), known_targets:2(med:2,min:2,max:2), known_containers:0(med:0,min:0,max:0), unexplored_rooms:1(med:1,min:1,max:1)]
+
+
+================================================================================
+FROM: transport
+Total transitions: 16
+Overall: [action1_dur:340.8(med:349,min:32,max:651), action2_dur:183.4(med:105,min:1,max:499)] [action1@frame:1286.1(med:1186.5,std:718.4,min:356,max:2896), action2@frame:1626.9(med:1412,std:769.9,min:598,max:2939)] [rooms:3.1(med:3,min:1,max:6), held:1.6(med:2,min:1,max:2), container:0.5(med:0.5,min:0,max:1), satisfied:3.4(med:3,min:0,max:8), known_targets:1.5(med:1,min:0,max:5), known_containers:1.2(med:1,min:0,max:3), unexplored_rooms:2.9(med:3,min:0,max:5)]
+================================================================================
+
+  → go grasp target                [   8] ( 50.0%)
+    [action1_dur:474.8(med:486,min:242,max:651), action2_dur:189.4(med:162.5,min:16,max:430)] [action1@frame:1456.9(med:1551,std:630.8,min:356,max:2229), action2@frame:1931.6(med:2057,std:720.9,min:598,max:2880)] [rooms:3.6(med:3.5,min:2,max:6), held:1.8(med:2,min:1,max:2), container:0.5(med:0.5,min:0,max:1), satisfied:3.9(med:4,min:0,max:7), known_targets:1.5(med:1,min:0,max:5), known_containers:0.9(med:0.5,min:0,max:3), unexplored_rooms:2.4(med:2.5,min:0,max:4)]
+
+  → go to                          [   3] ( 18.8%)
+    [action1_dur:196(med:266,min:43,max:279), action2_dur:162.7(med:107,min:43,max:338)] [action1@frame:1647.3(med:1592,std:997.7,min:454,max:2896), action2@frame:1843.3(med:1858,std:900.7,min:733,max:2939)] [rooms:3.7(med:3,min:2,max:6), held:1.7(med:2,min:1,max:2), container:0.3(med:0,min:0,max:1), satisfied:4.3(med:5,min:0,max:8), known_targets:0.3(med:0,min:0,max:1), known_containers:1.3(med:2,min:0,max:2), unexplored_rooms:2.3(med:3,min:0,max:4)]
+
+  → go grasp container             [   2] ( 12.5%)
+    [action1_dur:149.5(med:149.5,min:32,max:267), action2_dur:384(med:384,min:269,max:499)] [action1@frame:938.5(med:938.5,std:238.5,min:700,max:1177), action2@frame:1088(med:1088,std:121.0,min:967,max:1209)] [rooms:2.5(med:2.5,min:2,max:3), held:1.5(med:1.5,min:1,max:2), container:0.5(med:0.5,min:0,max:1), satisfied:2(med:2,min:1,max:3), known_targets:4.5(med:4.5,min:4,max:5), known_containers:1.5(med:1.5,min:1,max:2), unexplored_rooms:3.5(med:3.5,min:3,max:4)]
+
+  → explore                        [   2] ( 12.5%)
+    [action1_dur:221.5(med:221.5,min:70,max:373), action2_dur:81.5(med:81.5,min:65,max:98)] [action1@frame:643.5(med:643.5,std:173.5,min:470,max:817), action2@frame:865(med:865,std:22.0,min:843,max:887)] [rooms:1(med:1,min:1,max:1), held:1.5(med:1.5,min:1,max:2), container:0.5(med:0.5,min:0,max:1), satisfied:2(med:2,min:2,max:2), known_targets:1(med:1,min:0,max:2), known_containers:1(med:1,min:0,max:2), unexplored_rooms:5(med:5,min:5,max:5)]
+
+  → send message                   [   1] (  6.2%)
+    [action1_dur:325(med:325,min:325,max:325), action2_dur:1(med:1,min:1,max:1)] [action1@frame:816(med:816,std:0.0,min:816,max:816), action2@frame:1141(med:1141,std:0.0,min:1141,max:1141)] [rooms:3(med:3,min:3,max:3), held:1(med:1,min:1,max:1), container:1(med:1,min:1,max:1), satisfied:3(med:3,min:3,max:3), known_targets:0(med:0,min:0,max:0), known_containers:3(med:3,min:3,max:3), unexplored_rooms:3(med:3,min:3,max:3)]
+
+
+================================================================================
+FROM: send message
+Total transitions: 13
+Overall: [action1_dur:1(med:1,min:1,max:1), action2_dur:152.4(med:146,min:1,max:380)] [action1@frame:1633(med:1517,std:995.9,min:151,max:2982), action2@frame:1634(med:1518,std:995.9,min:152,max:2983)] [rooms:3.6(med:3,min:1,max:6), held:0.5(med:0,min:0,max:2), container:0.3(med:0,min:0,max:1), satisfied:5.9(med:5,min:0,max:10), known_targets:1.1(med:0,min:0,max:4), known_containers:0.9(med:0,min:0,max:3), unexplored_rooms:2.4(med:3,min:0,max:5)]
+================================================================================
+
+  → go to                          [   8] ( 61.5%)
+    [action1_dur:1(med:1,min:1,max:1), action2_dur:141.2(med:124.5,min:1,max:378)] [action1@frame:1750.9(med:2084.5,std:1093.4,min:151,max:2982), action2@frame:1751.9(med:2085.5,std:1093.4,min:152,max:2983)] [rooms:3.4(med:3.5,min:1,max:6), held:0.2(med:0,min:0,max:1), container:0.1(med:0,min:0,max:1), satisfied:6.5(med:8.5,min:0,max:10), known_targets:0.5(med:0,min:0,max:4), known_containers:0.4(med:0,min:0,max:2), unexplored_rooms:2.6(med:2.5,min:0,max:5)]
+
+  → go grasp container             [   2] ( 15.4%)
+    [action1_dur:1(med:1,min:1,max:1), action2_dur:162(med:162,min:94,max:230)] [action1@frame:1188.5(med:1188.5,std:47.5,min:1141,max:1236), action2@frame:1189.5(med:1189.5,std:47.5,min:1142,max:1237)] [rooms:3(med:3,min:3,max:3), held:0(med:0,min:0,max:0), container:0(med:0,min:0,max:0), satisfied:5(med:5,min:5,max:5), known_targets:3(med:3,min:3,max:3), known_containers:2.5(med:2.5,min:2,max:3), unexplored_rooms:3(med:3,min:3,max:3)]
+
+  → go grasp target                [   1] (  7.7%)
+    [action1_dur:1(med:1,min:1,max:1), action2_dur:380(med:380,min:380,max:380)] [action1@frame:1517(med:1517,std:0.0,min:1517,max:1517), action2@frame:1518(med:1518,std:0.0,min:1518,max:1518)] [rooms:5(med:5,min:5,max:5), held:1(med:1,min:1,max:1), container:1(med:1,min:1,max:1), satisfied:5(med:5,min:5,max:5), known_targets:2(med:2,min:2,max:2), known_containers:0(med:0,min:0,max:0), unexplored_rooms:1(med:1,min:1,max:1)]
+
+  → put into container             [   1] (  7.7%)
+    [action1_dur:1(med:1,min:1,max:1), action2_dur:146(med:146,min:146,max:146)] [action1@frame:480(med:480,std:0.0,min:480,max:480), action2@frame:481(med:481,std:0.0,min:481,max:481)] [rooms:3(med:3,min:3,max:3), held:2(med:2,min:2,max:2), container:1(med:1,min:1,max:1), satisfied:1(med:1,min:1,max:1), known_targets:2(med:2,min:2,max:2), known_containers:3(med:3,min:3,max:3), unexplored_rooms:3(med:3,min:3,max:3)]
+
+  → transport                      [   1] (  7.7%)
+    [action1_dur:1(med:1,min:1,max:1), action2_dur:1(med:1,min:1,max:1)] [action1@frame:2848(med:2848,std:0.0,min:2848,max:2848), action2@frame:2849(med:2849,std:0.0,min:2849,max:2849)] [rooms:6(med:6,min:6,max:6), held:1(med:1,min:1,max:1), container:1(med:1,min:1,max:1), satisfied:9(med:9,min:9,max:9), known_targets:0(med:0,min:0,max:0), known_containers:1(med:1,min:1,max:1), unexplored_rooms:0(med:0,min:0,max:0)]
+
+
+================================================================================
+FROM: go grasp container
+Total transitions: 12
+Overall: [action1_dur:180.3(med:152.5,min:5,max:499), action2_dur:94.5(med:99.5,min:1,max:184)] [action1@frame:864.7(med:954,std:525.9,min:73,max:1796), action2@frame:1045(med:1227,std:573.1,min:125,max:1894)] [rooms:2.8(med:3,min:1,max:6), held:0.4(med:0,min:0,max:1), container:0(med:0,min:0,max:0), satisfied:3.2(med:4,min:0,max:6), known_targets:2(med:2,min:0,max:5), known_containers:1.8(med:1.5,min:1,max:3), unexplored_rooms:3.2(med:3,min:0,max:5)]
+================================================================================
+
+  → go grasp target                [   6] ( 50.0%)
+    [action1_dur:237.5(med:249.5,min:52,max:499), action2_dur:94.8(med:70,min:33,max:184)] [action1@frame:1037.2(med:1088,std:514.6,min:73,max:1796), action2@frame:1274.7(med:1351.5,std:567.9,min:125,max:1894)] [rooms:3.3(med:3,min:1,max:6), held:0(med:0,min:0,max:0), container:0(med:0,min:0,max:0), satisfied:4(med:4.5,min:0,max:6), known_targets:2.7(med:3,min:0,max:5), known_containers:1.8(med:2,min:1,max:3), unexplored_rooms:2.7(med:3,min:0,max:5)]
+
+  → put into container             [   4] ( 33.3%)
+    [action1_dur:109.5(med:62.5,min:5,max:308), action2_dur:140.8(med:146,min:125,max:146)] [action1@frame:684.5(med:615,std:498.7,min:121,max:1387), action2@frame:794(med:804,std:520.2,min:176,max:1392)] [rooms:2.2(med:1.5,min:1,max:5), held:1(med:1,min:1,max:1), container:0(med:0,min:0,max:0), satisfied:2.2(med:2,min:0,max:5), known_targets:0.8(med:0.5,min:0,max:2), known_containers:1.5(med:1,min:1,max:3), unexplored_rooms:3.8(med:4.5,min:1,max:5)]
+
+  → send message                   [   2] ( 16.7%)
+    [action1_dur:150.5(med:150.5,min:94,max:207), action2_dur:1(med:1,min:1,max:1)] [action1@frame:707.5(med:707.5,std:434.5,min:273,max:1142), action2@frame:858(med:858,std:378.0,min:480,max:1236)] [rooms:2(med:2,min:1,max:3), held:0.5(med:0.5,min:0,max:1), container:0(med:0,min:0,max:0), satisfied:2.5(med:2.5,min:0,max:5), known_targets:2.5(med:2.5,min:2,max:3), known_containers:2(med:2,min:1,max:3), unexplored_rooms:4(med:4,min:3,max:5)]
+

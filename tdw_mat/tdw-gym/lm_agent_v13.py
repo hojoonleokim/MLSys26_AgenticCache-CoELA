@@ -4,7 +4,6 @@ import numpy as np
 import cv2
 import pyastar2d as pyastar
 import random
-import re
 import time
 import math
 import copy
@@ -23,15 +22,8 @@ ANGLE = 15
 _worker_llm = None
 
 def clean_action(action):
-    """Helper method to remove 'at step X' and status suffixes from action strings"""
-    # Remove " at step X" and any trailing suffixes like " - canceled", " - unreached"
-    if " at step " in action:
-        action = action.split(" at step ")[0]
-    # Also handle edge cases where suffix might be directly attached
-    for suffix in [" - canceled", " - unreached"]:
-        if action.endswith(suffix):
-            action = action[:-len(suffix)]
-    return action
+    """Helper method to remove 'at step X' suffix from action strings"""
+    return action.split(" at step ")[0] if " at step " in action else action
 
 def _pool_init_llm(llm_args):
     """Initialize LLM instance in worker process"""
@@ -86,15 +78,12 @@ class lm_agent:
         self.object_info = {} # {id: {id: xx, type: 0/1/2, name: sss, position: x,y,z}}
         self.object_per_room = {} # {room_name: {0/1/2: [{id: xx, type: 0/1/2, name: sss, position: x,y,z}]}}
         self.object_discovery_time = {} # {object_id: discovery_timestamp}
-        self.dialogue_objects = {}
         self.id_map = None
         self.object_map = None
         self.agent_id = agent_id
         self.agent_type = 'lm_agent'
         self.agent_names = ["Alice", "Bob"]
         self.opponent_agent_id = 1 - agent_id
-        self.oppo_name = self.agent_names[self.opponent_agent_id]
-        self.oppo_pronoun = "she" if self.opponent_agent_id == 0 else "he"
         self.env_api = None
         self.max_frames = max_frames
         self.output_dir = output_dir
@@ -127,13 +116,11 @@ class lm_agent:
 
         self.source = args.source
         self.lm_id = args.lm_id
-        self.run_id = args.run_id
         self.prompt_template_path = args.prompt_template_path
         self.communication = args.communication
         self.cot = args.cot
         self.args = args
-        self.no_cache_loading = args.no_cache_loading if hasattr(args, 'no_cache_loading') else False
-        self.action_cache = ActionCache(debug_writer=self.debug_write if self.debug else None, agent_id=self.agent_id, no_cache_loading=self.no_cache_loading)
+        self.action_cache = ActionCache(debug_writer=self.debug_write if self.debug else None, agent_id=self.agent_id)
         self.action_history = []
         self.dialogue_history = []
         self.plan = None
@@ -173,36 +160,7 @@ class lm_agent:
         self.submitted = False
         self.interrupt = False
         self.replacing_plan = None
-        self.last_cache_line_count = 0
 
-    def write_log(self, log_message):
-        """Write log message to agent-specific file
-        
-        Uses self.agent_id, self.lm_id, and self.run_id automatically.
-        
-        Args:
-            log_message: Message to write to log
-        """
-        log_dir = f'./result_log/{self.run_id}'
-        os.makedirs(log_dir, exist_ok=True)
-        file_name = f'{log_dir}/agent_{self.agent_id}_lm_{self.lm_id}_log.txt'
-        
-        with open(file_name, 'a') as file:  
-            file.write(log_message + '\n')
-    
-    def write_plan_log(self, log_message):
-        """Write plan and cache tracking log to separate file
-        
-        Args:
-            log_message: Message to write to plan tracking log
-        """
-        log_dir = f'./result_log/{self.run_id}'
-        os.makedirs(log_dir, exist_ok=True)
-        file_name = f'{log_dir}/agent_{self.agent_id}_lm_{self.lm_id}_plan_tracking.txt'
-        
-        with open(file_name, 'a') as file:  
-            file.write(log_message + '\n')
-    
     def debug_write(self, message):
         """Write debug message to both console and file"""
         print(message)
@@ -390,33 +348,12 @@ class lm_agent:
                 return False
         return d < threshold
 
-    def _build_satisfied_list(self):
-        """Build satisfied list with full object info: prioritize object_info, fallback to dialogue_objects"""
-        satisfied_list = []
-        for x in self.satisfied:
-            if x in self.object_info:
-                satisfied_list.append(self.object_info[x])
-            elif x in self.dialogue_objects:
-                satisfied_list.append(self.dialogue_objects[x])
-        return satisfied_list
-
-    def reset(self, obs, goal_objects = None, output_dir = None, env_api = None, rooms_name = None, agent_color = [-1, -1, -1], agent_id = 0, gt_mask = True, save_img = True, scene_bounds = None):
+    def reset(self, obs, goal_objects = None, output_dir = None, env_api = None, rooms_name = None, agent_color = [-1, -1, -1], agent_id = 0, gt_mask = True, save_img = True):
         
         self.force_ignore = []
         # Keep episode-specific output_dir separate for AgentMemory (images)
         # But preserve run-level self.output_dir for debug/LLM logs
         episode_output_dir = output_dir if output_dir is not None else self.output_dir
-        
-        # Update scene bounds and map size if provided
-        if scene_bounds is not None:
-            self._scene_bounds = scene_bounds
-            # Recalculate map size based on bounds and CELL_SIZE
-            width = int(round((self._scene_bounds["x_max"] - self._scene_bounds["x_min"]) / CELL_SIZE))
-            height = int(round((self._scene_bounds["z_max"] - self._scene_bounds["z_min"]) / CELL_SIZE))
-            self.map_size = (width, height)
-            if self.debug:
-                print(f"Updated map size to {self.map_size} based on scene bounds: {self._scene_bounds}")
-
         self.agent_memory = AgentMemory(agent_id = self.agent_id, agent_color = agent_color, output_dir = episode_output_dir, gt_mask=self.gt_mask, gt_behavior=True, env_api=env_api, constraint_type = None, map_size = self.map_size, scene_bounds = self._scene_bounds, debug_writer=self.debug_write if self.debug else None)
         self.invalid_count = 0
         self.obs = obs
@@ -445,7 +382,6 @@ class lm_agent:
         self.with_oppo = []
         self.oppo_last_room = None
         self.satisfied = []
-        self.dialogue_objects = {}  # Store object info from opponent's dialogue
         self.color2id = {}
         self.dropping_object = []
         self.steps = 0
@@ -464,7 +400,6 @@ class lm_agent:
         # Initialize missing variables
         self.target_pos = None
         self.explore_count = 0
-        self.goto_count = 0
         self.async_action_history = []
         self.turn_on_llm = True
         self.llm_running = False
@@ -474,11 +409,10 @@ class lm_agent:
         self.local_step = 0
         self.replace_plan = False
         # Reset action cache for fresh start each episode
-        self.action_cache = ActionCache(self.rooms_name, self.goal_objects, debug_writer=self.debug_write if self.debug else None, agent_id=self.agent_id, no_cache_loading=self.no_cache_loading)
+        self.action_cache = ActionCache(self.rooms_name, self.goal_objects, debug_writer=self.debug_write if self.debug else None, agent_id=self.agent_id)
         self.evicted_plan = None
         self.interrupt = False
         self.replacing_plan = None
-        self.last_cache_line_count = 0
         self.gt_mask = gt_mask
         if self.gt_mask == True:
             self.detection_threshold = 5
@@ -528,18 +462,11 @@ class lm_agent:
         return action
 
     def gotoroom(self):
-        self.goto_count += 1
         target_room = ' '.join(self.plan.split(' ')[2: 4])
         if target_room[-1] == ',': target_room = target_room[:-1]
 
         target_pos = self.env_api['center_of_room'](target_room)
-        if self.goto_count > 500:
-            self.action_history[-1] += " - unreached"
-            self.goto_count = 0
-            self.plan = None
-            return None
-        if self.current_room == target_room:
-            self.goto_count = 0
+        if self.current_room == target_room and self.room_distance == 0:
             self.plan = None
             return None
         # add an interruption if anything new happens
@@ -560,18 +487,7 @@ class lm_agent:
         # assert target_room == self.current_room, f"{target_room} != {self.current_room}"
         target_pos = self.env_api['center_of_room'](target_room)
         self.explore_count += 1
-        
-        # Fast exploration: timeout after 100 frames
-        if self.explore_count > 100:
-            self.logger.info(f"Explore timeout for {target_room} after {self.explore_count} steps, marking as complete")
-            self.rotated = 0
-            self.rooms_explored[target_room] = 'all'
-            self.plan = None
-            self.explore_count = 0
-            return None
-        
-        # Aggressive threshold increase for fast exploration
-        dis_threshold = 1 + min(self.explore_count * 0.15, 4.0)
+        dis_threshold = 1 + self.explore_count / 50
         if not self.reach_target_pos(target_pos, dis_threshold):
             return self.move(target_pos)
         if self.rotated is None:
@@ -598,7 +514,7 @@ class lm_agent:
             self.target_pos = copy.deepcopy(self.object_info[target_object_id]['position'])
         target_object_pos = self.target_pos
 
-        if target_object_id not in self.object_info or target_object_id in self.with_oppo or target_object_id in self.satisfied:
+        if target_object_id not in self.object_info or target_object_id in self.with_oppo:
             if self.debug:
                 self.logger.debug(f"grasp failed. object is not here any more!")
             self.plan = None
@@ -704,7 +620,7 @@ class lm_agent:
         # Prepare arguments for the worker
         llm_args = (
             self.num_frames, self.current_room, dict(self.rooms_explored), 
-            self.obs['held_objects'], self._build_satisfied_list(),
+            self.obs['held_objects'], [self.object_info[x] for x in self.satisfied if x in self.object_info],
             self.object_list, self.object_per_room, list(self.async_action_history), 
             list(self.dialogue_history), self.obs['oppo_held_objects'], self.oppo_last_room,
             self.goal_objects
@@ -875,70 +791,6 @@ class lm_agent:
             self.debug_write(f"############AGENT #{self.agent_id} END FRAME#{self.num_frames}############")
             return {'type': 'ongoing'}
 
-        # Parse transported objects and held objects from opponent's dialogue messages
-        if self.communication:
-            for msg in reversed(self.dialogue_history):
-                if msg.startswith(f"{self.oppo_name}:"):
-                    # Parse transported objects from "We've already transported" line
-                    if "We've already transported" in msg:
-                        transported_line = msg.split("We've already transported")[1].split('\n')[0]
-                        # Parse <name> (id) pattern
-                        transported_objects = re.findall(r'<([^>]+)>\s*\((\d+)\)', transported_line)
-                        for obj_name, obj_id_str in transported_objects:
-                            obj_id = int(obj_id_str)
-                            if obj_id not in self.satisfied:
-                                self.satisfied.append(obj_id)
-                            # Store minimal info for dialogue only (not in object_info to avoid discovery issues)
-                            if obj_id not in self.dialogue_objects:
-                                self.dialogue_objects[obj_id] = {'id': obj_id, 'type': 0, 'name': obj_name}
-                    
-                    # Parse held objects from "I'm currently holding" line
-                    if "I'm currently holding" in msg:
-                        holding_line = [line for line in msg.split('\n') if "I'm currently holding" in line]
-                        if holding_line:
-                            line = holding_line[0]
-                            # Parse all <name> (id) patterns
-                            held_objects = re.findall(r'<([^>]+)>\s*\((\d+)\)', line)
-                            for obj_name, obj_id_str in held_objects:
-                                obj_id = int(obj_id_str)
-                                if obj_id not in self.satisfied:
-                                    self.satisfied.append(obj_id)
-                                # Store minimal info for dialogue only
-                                if obj_id not in self.dialogue_objects:
-                                    # Check if "a container" appears IMMEDIATELY before this object (not just somewhere before)
-                                    obj_pattern = f'<{obj_name}> ({obj_id_str})'
-                                    obj_pos = line.find(obj_pattern)
-                                    before_text = line[:obj_pos].strip()
-                                    # Container pattern: "a container <name> (id)" or "an empty container <name> (id)"
-                                    obj_type = 1 if before_text.endswith('a container') or before_text.endswith('an empty container') else 0
-                                    self.dialogue_objects[obj_id] = {'id': obj_id, 'type': obj_type, 'name': obj_name}
-                    break  # Only process the most recent message
-
-        # Remove duplicates from satisfied while preserving order
-        self.satisfied = list(dict.fromkeys(self.satisfied))
-        
-        # Mark objects near the bed as satisfied (matching env's check_goal logic)
-        # IMPORTANT: Do this BEFORE get_new_object_list() so they get filtered out automatically
-        bed_pos = None
-        for obj_id, obj_info in self.object_info.items():
-            if obj_info.get('type') == 2:  # Bed
-                bed_pos = obj_info.get('position')
-                break
-        
-        if bed_pos is not None:
-            bed_room = self.env_api['belongs_to_which_room'](bed_pos)
-            for obj_id, obj_info in self.object_info.items():
-                if obj_info.get('type') in [0, 1] and obj_id not in self.satisfied:  # Target objects and containers
-                    obj_pos = obj_info.get('position')
-                    if obj_pos is not None:
-                        # Match env's check_goal: 2D distance < 3 and in Bedroom
-                        distance_2d = np.linalg.norm(np.array([bed_pos[0], bed_pos[2]]) - np.array([obj_pos[0], obj_pos[2]]))
-                        obj_room = self.env_api['belongs_to_which_room'](obj_pos)
-                        if distance_2d < 3.0 and obj_room is not None and 'Bedroom' in obj_room:
-                            if self.debug:
-                                self.debug_write(f"Auto-marking object near bed as satisfied (matches env check_goal): {obj_info.get('name')} ({obj_id}), distance={distance_2d:.2f}m in {obj_room}")
-                            self.satisfied.append(obj_id)
-
         self.get_new_object_list()
         print(self.new_object_list)
         self.get_object_list()
@@ -979,40 +831,24 @@ class lm_agent:
             if(len(new_actions_cleaned) == 1):
                 if prev_action == async_plan:
                     prev_action = clean_action(self.async_action_history[-2])
-                    self.action_cache.hit(prev_action, async_plan, self.async_query_metrics)
-                    self.write_log(f"[Frame {self.num_frames}] HIT: {prev_action} -> {async_plan}")
-                    # Log cache line count after hit
-                    current_cache_lines = self.action_cache.get_total_cache_lines()
-                    if current_cache_lines != self.last_cache_line_count:
-                        self.write_plan_log(f"[Frame {self.num_frames}] Cache lines: {self.last_cache_line_count} -> {current_cache_lines} (change: +{current_cache_lines - self.last_cache_line_count})")
-                        self.last_cache_line_count = current_cache_lines
+                    self.action_cache.hit(prev_action, async_plan)
                 elif async_plan in available_plans_list:
                     self.turn_on_llm = False
                     prev_action = new_actions_cleaned[0]
-                    self.action_cache.hit(prev_action, async_plan, self.async_query_metrics)
-                    self.write_log(f"[Frame {self.num_frames}] HIT: {prev_action} -> {async_plan}")
-                    # Log cache line count after hit
-                    current_cache_lines = self.action_cache.get_total_cache_lines()
-                    if current_cache_lines != self.last_cache_line_count:
-                        self.write_plan_log(f"[Frame {self.num_frames}] Cache lines: {self.last_cache_line_count} -> {current_cache_lines} (change: +{current_cache_lines - self.last_cache_line_count})")
-                        self.last_cache_line_count = current_cache_lines
+                    self.action_cache.hit(prev_action, async_plan)
                     
                     # Check if last action type is 0, 1, 2 (movement/rotation actions)
                     # Only replace plan during movement, not during critical actions like pick/put
                     if self.last_action is not None and isinstance(self.last_action, dict) and self.last_action.get('type') in [0, 1, 2]:
                         self.target_pos = None
-                        self.explore_count = 0
                         self.plan = async_plan
 
                         # Add "canceled" suffix to the last action
                         # send a message is instant so doesn't need canceled, only ongoing actions
                         if not self.action_history[-1].startswith("send a message"):
-                            old_plan = self.action_history[-1].split(" at step ")[0]
                             self.action_history[-1] += " - canceled"
-                            self.write_plan_log(f"[Frame {self.num_frames}] Plan replaced: '{old_plan}' -> '{async_plan}' by LLM (async)")
                         # Add the new async_plan with current step number
-                        plan_text = 'send a message' if async_plan.startswith('send a message:') else async_plan
-                        self.action_history.append(f"{plan_text} at step {self.num_frames}")
+                        self.action_history.append(f"{async_plan} at step {self.num_frames}")
                     else:
                         # Store in buffer if not in movement state
                         self.async_plan_buffer = async_plan
@@ -1020,57 +856,29 @@ class lm_agent:
                 else:
                     prev_action = clean_action(self.async_action_history[-2])
                     self.action_cache.miss(prev_action, new_actions_cleaned[0], async_plan, self.async_query_metrics)
-                    self.write_log(f"[Frame {self.num_frames}] MISS: {prev_action} -> {new_actions_cleaned[0]} (predicted: {async_plan})")
-                    # Log cache line count after miss
-                    current_cache_lines = self.action_cache.get_total_cache_lines()
-                    if current_cache_lines != self.last_cache_line_count:
-                        self.write_plan_log(f"[Frame {self.num_frames}] Cache lines: {self.last_cache_line_count} -> {current_cache_lines} (change: +{current_cache_lines - self.last_cache_line_count})")
-                        self.last_cache_line_count = current_cache_lines
             else:
                 next_action = new_actions_cleaned[1]
                 if (async_plan in new_actions_cleaned) and (next_action == async_plan):
-                    self.action_cache.hit(prev_action, async_plan, self.async_query_metrics)
-                    self.write_log(f"[Frame {self.num_frames}] HIT: {prev_action} -> {async_plan}")
-                    # Log cache line count after hit
-                    current_cache_lines = self.action_cache.get_total_cache_lines()
-                    if current_cache_lines != self.last_cache_line_count:
-                        self.write_plan_log(f"[Frame {self.num_frames}] Cache lines: {self.last_cache_line_count} -> {current_cache_lines} (change: +{current_cache_lines - self.last_cache_line_count})")
-                        self.last_cache_line_count = current_cache_lines
+                    self.action_cache.hit(prev_action, async_plan)
                 elif (async_plan in new_actions_cleaned):
-                    self.action_cache.hit(prev_action, async_plan, self.async_query_metrics)
-                    self.write_log(f"[Frame {self.num_frames}] HIT: {prev_action} -> {async_plan}")
-                    # Log cache line count after hit
-                    current_cache_lines = self.action_cache.get_total_cache_lines()
-                    if current_cache_lines != self.last_cache_line_count:
-                        self.write_plan_log(f"[Frame {self.num_frames}] Cache lines: {self.last_cache_line_count} -> {current_cache_lines} (change: +{current_cache_lines - self.last_cache_line_count})")
-                        self.last_cache_line_count = current_cache_lines
+                    self.action_cache.hit(prev_action, async_plan)
                 else:
                     self.action_cache.miss(prev_action, next_action, async_plan, self.async_query_metrics)
-                    self.write_log(f"[Frame {self.num_frames}] MISS: {prev_action} -> {next_action} (predicted: {async_plan})")
-                    # Log cache line count after miss
-                    current_cache_lines = self.action_cache.get_total_cache_lines()
-                    if current_cache_lines != self.last_cache_line_count:
-                        self.write_plan_log(f"[Frame {self.num_frames}] Cache lines: {self.last_cache_line_count} -> {current_cache_lines} (change: +{current_cache_lines - self.last_cache_line_count})")
-                        self.last_cache_line_count = current_cache_lines
                     if async_plan in available_plans_list:
                         # Check if last action type is 0, 1, 2 (movement/rotation actions)
                         # Only replace plan during movement, not during critical actions like pick/put
                         self.turn_on_llm = False
                         if self.last_action is not None and isinstance(self.last_action, dict) and self.last_action.get('type') in [0, 1, 2]:
                             self.target_pos = None
-                            self.explore_count = 0
                             self.plan = async_plan
 
                             # Add "canceled" suffix to the last action
                             # send a message is instant so doesn't need canceled, only ongoing actions
                             if not self.action_history[-1].startswith("send a message"):
-                                old_plan = self.action_history[-1].split(" at step ")[0]
                                 self.action_history[-1] += " - canceled"
-                                self.write_plan_log(f"[Frame {self.num_frames}] Plan replaced: '{old_plan}' -> '{async_plan}' by LLM (async delayed)")
                             
                             # Add the new async_plan with current step number
-                            plan_text = 'send a message' if async_plan.startswith('send a message:') else async_plan
-                            self.action_history.append(f"{plan_text} at step {self.num_frames}")
+                            self.action_history.append(f"{async_plan} at step {self.num_frames}")
                         else:
                             # Store in buffer if not in movement state
                             self.async_plan_buffer = async_plan
@@ -1080,8 +888,6 @@ class lm_agent:
         while action is None:
             if self.plan is None:
                 self.target_pos = None
-                self.explore_count = 0  # Reset explore_count when starting new plan
-                self.goto_count = 0
                 plan = None
                 a_info = {}  # Initialize a_info
 
@@ -1095,12 +901,6 @@ class lm_agent:
                         prev_action = clean_action(self.action_history[-2])
                         next_action = clean_action(self.action_history[-1])
                         self.action_cache.miss(prev_action, next_action, self.async_plan_buffer, self.async_query_metrics)
-                        self.write_log(f"[Frame {self.num_frames}] MISS: {prev_action} -> {next_action} (predicted: {self.async_plan_buffer})")
-                        # Log cache line count after miss
-                        current_cache_lines = self.action_cache.get_total_cache_lines()
-                        if current_cache_lines != self.last_cache_line_count:
-                            self.write_plan_log(f"[Frame {self.num_frames}] Cache lines: {self.last_cache_line_count} -> {current_cache_lines} (change: +{current_cache_lines - self.last_cache_line_count})")
-                            self.last_cache_line_count = current_cache_lines
                         self.async_plan_buffer = None
                 if plan is None:
                     self.turn_on_llm = True
@@ -1109,7 +909,7 @@ class lm_agent:
                         current_room=self.current_room,
                         rooms_explored=self.rooms_explored,
                         holding_objects=self.obs['held_objects'],
-                        satisfied=self._build_satisfied_list(),
+                        satisfied=[self.object_info[x] for x in self.satisfied if x in self.object_info],
                         object_list=self.object_list,
                         obj_per_room=self.object_per_room,
                         action_history=self.action_history,
@@ -1122,14 +922,7 @@ class lm_agent:
                     plan = "[wait]"
 
                 self.plan = plan
-                plan_text = 'send a message' if plan.startswith('send a message:') else plan
-                self.action_history.append(f"{plan_text} at step {self.num_frames}")
-                self.write_plan_log(f"[Frame {self.num_frames}] Plan started: {plan_text}")
-                # Log cache line count growth
-                current_cache_lines = self.action_cache.get_total_cache_lines()
-                if current_cache_lines != self.last_cache_line_count:
-                    self.write_plan_log(f"[Frame {self.num_frames}] Cache lines: {self.last_cache_line_count} -> {current_cache_lines} (change: +{current_cache_lines - self.last_cache_line_count})")
-                    self.last_cache_line_count = current_cache_lines
+                self.action_history.append(f"{'send a message' if plan.startswith('send a message:') else plan} at step {self.num_frames}")
 
                 a_info.update({"Frames": self.num_frames})
                 info.update({"LLM": a_info})
@@ -1137,6 +930,7 @@ class lm_agent:
             if self.plan.startswith('go to'):
                 action = self.gotoroom()
             elif self.plan.startswith('explore'):
+                self.explore_count = 0
                 action = self.goexplore()
             elif self.plan.startswith('go grasp'):
                 action = self.gograsp()
@@ -1164,8 +958,8 @@ class lm_agent:
             self.logger.debug(info)
         self.last_action = action
 
-        self.debug_write(f"executing plan: {self.plan}")
-        self.debug_write(f"plan history: {self.action_history}")
+        self.debug_write(f"plan: {self.plan}")
+        self.debug_write(f"plan: {self.action_history}")
         self.debug_write(f"############AGENT #{self.agent_id} END FRAME#{self.num_frames}############")
         return action
 

@@ -95,24 +95,24 @@ class TDW(Env):
                                 (self.screen_size, \
                                 self.screen_size), dtype=np.int32)
         object_space = gym.spaces.Dict({
-            'id': gym.spaces.Discrete(30),
-            'type': gym.spaces.Discrete(4),
+            'id': gym.spaces.Discrete(10000000),
+            'type': gym.spaces.Discrete(6),
             'seg_color': gym.spaces.Box(0, 255, (3, ), dtype=np.int32),
             'name': gym.spaces.Text(max_length=100, charset=string.printable)
         })
 
         self.action_space_single = gym.spaces.Dict({
             'type': gym.spaces.Discrete(7), # please refer to line 192-210
-            'object': gym.spaces.Discrete(30),
+            'object': gym.spaces.Discrete(10000000),
             'arm': gym.spaces.Discrete(2),
             'message': gym.spaces.Text(max_length=1000, charset=string.printable)
         })
         
         self.hand_object_space = gym.spaces.Dict({
-            'id': gym.spaces.Discrete(30),
-            'type': gym.spaces.Discrete(4),
+            'id': gym.spaces.Discrete(10000000),
+            'type': gym.spaces.Discrete(6),
             'name': gym.spaces.Text(max_length=100, charset=string.printable),
-            'contained': gym.spaces.Tuple(gym.spaces.Discrete(30) for _ in range(3)),
+            'contained': gym.spaces.Tuple(gym.spaces.Discrete(10000000) for _ in range(3)),
             'contained_name': gym.spaces.Tuple(gym.spaces.Text(max_length=100, charset=string.printable) for _ in range(3))
         })
         
@@ -230,7 +230,8 @@ class TDW(Env):
         self.scene_info = scene_info
         
         # Now the scene is fixed, so num_containers and num_target_objects are not used anymore in new settings
-        self.controller.start_floorplan_trial(scene=scene, layout=layout, replicants=self.number_of_agents, num_containers=4, num_target_objects=10,
+        # We pass 0 as placeholders since the actual objects are loaded from the dataset files
+        self.controller.start_floorplan_trial(scene=scene, layout=layout, replicants=self.number_of_agents, num_containers=0, num_target_objects=0,
                                    random_seed=seed, task = task, data_prefix = self.data_prefix)
 
         # Add a gt occupancy map. In the standard setting, we don't need this
@@ -697,12 +698,13 @@ class TDW(Env):
                         delay_frame_count[replicant_id] = max((len(self.messages[replicant_id]) - 1) // self.message_per_frame, 0)
             if finish: break
             data = self.controller.communicate([])
-            for i in range(len(data) - 1):
-                r_id = OutputData.get_data_type_id(data[i])
-                if r_id == 'imag':
-                    images = Images(data[i])
-                    if images.get_avatar_id() == "a" and (self.num_frames + num_frames) % 1 == 0:
-                        TDWUtils.save_images(images=images, filename= f"{self.num_frames + num_frames:05d}", output_directory = os.path.join(self.save_dir, 'top_down_image'))
+            # top_down_image saving disabled for performance
+            # for i in range(len(data) - 1):
+            #     r_id = OutputData.get_data_type_id(data[i])
+            #     if r_id == 'imag':
+            #         images = Images(data[i])
+            #         if images.get_avatar_id() == "a" and (self.num_frames + num_frames) % 1 == 0:
+            #             TDWUtils.save_images(images=images, filename= f"{self.num_frames + num_frames:05d}", output_directory = os.path.join(self.save_dir, 'top_down_image'))
             num_frames += 1
 
         self.num_frames += num_frames

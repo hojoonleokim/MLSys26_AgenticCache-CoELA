@@ -23,13 +23,16 @@ MINIMAL_EXPLORE_STEP = 100
 BEHAVIOR_DETECT_INTERVAL = 15
 #Some wall may be detected as object, so we need to remove them from the wall map
 class AgentMemory():
-    def __init__(self, agent_id, agent_color, output_dir = None, gt_mask = False, gt_behavior = False, env_api = None, constraint_type = None, map_size = None, scene_bounds = None):
+    def __init__(self, agent_id, agent_color, output_dir = None, gt_mask = False, gt_behavior = False, env_api = None, constraint_type = None, map_size = None, scene_bounds = None, debug_writer = None):
         self.map_size = map_size
         self.env_api = env_api
         self.turn_around_count = 0
         self.goal_objects = None
         self._scene_bounds = scene_bounds
         self.obs = None        
+
+        self.debug_writer = debug_writer
+        
         #0: free, 1: occupied, 2: unknown
         #occupancy map is the map that the agent that has been explored, updated every frames
         #The difference of occupancy map and local occupancy map is that 
@@ -94,6 +97,12 @@ class AgentMemory():
             [{'id': None, 'type': None, 'name': None, 'contained': [None, None, None], 'contained_name': [None, None, None]}, 
              {'id': None, 'type': None, 'name': None, 'contained': [None, None, None], 'contained_name': [None, None, None]}]
         ]
+        
+    def _debug_print(self, message):
+        """Print debug message using the provided debug_writer if available"""
+        if self.debug_writer:
+            self.debug_writer(f"AgentMemory: {message}")
+        # If debug_writer is None, don't print anything
 
     def detect(self, rgb):
         detect_result = self.detection_model(rgb[..., [2, 1, 0]])['predictions'][0]
@@ -544,6 +553,20 @@ class AgentMemory():
             # Ignore the first grid
             distance += dist_map[path[i][0], path[i][1]]
         return path, distance
+    
+    def have_wall_in_path(self, path, max_steps=5):
+        """경로상의 벽 검사 (최대 max_steps까지)"""
+        check_steps = min(max_steps, len(path) - 1)
+        
+        for step in range(1, check_steps + 1):  # 시작점 제외하고 검사
+            i, j = path[step]
+            # 해당 위치의 벽 검사 (단일 점만)
+            if (0 <= i < self.wall_map.shape[0] and 
+                0 <= j < self.wall_map.shape[1]):
+                # 다중 벽 타입 검사
+                if (self.wall_map[i, j] > 0):
+                    return step  # 벽이 발견된 스텝 번호 리턴
+        return 0  # 벽 없음
     
     def have_wall(self, st_pos, de_pos):
         for i in range(min(st_pos[0], de_pos[0]), max(st_pos[0], de_pos[0])):

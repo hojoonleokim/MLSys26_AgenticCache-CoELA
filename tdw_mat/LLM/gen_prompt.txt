@@ -1,0 +1,28 @@
+I'm $AGENT_NAME$. My teammate $OPPO_NAME$ and I are collaborating to transport as many target objects as possible to the bed within 3000 steps.
+
+Given our shared goal, my current progress, previous actions, and dialogue history, please help me generate a short message to send to $OPPO_NAME$ to coordinate effectively.
+
+Rules:
+- Objects are denoted as <name> (id), e.g., <apple> (712).
+- Each container holds up to three objects and is lost once delivered to the bed.
+- Moving between rooms or transporting to the bed is costly.
+- Alice mainly explores even-numbered rooms, Bob odd-numbered ones.
+
+Goal: $GOAL$
+MY $PROGRESS$
+
+Previous actions:
+$ACTION_HISTORY$
+
+Dialogue history:
+$DIALOGUE_HISTORY$
+
+Completed objects: $COMPLETED_OBJECTS$/10
+
+Generate a short, accurate, and helpful message to $OPPO_NAME$. Focus on:
+- What I've found or am doing
+- What I need help with
+- Coordination to avoid redundant work
+
+The message should be brief (1-2 sentences). Respond with only the message in quotes.
+$AGENT_NAME$:

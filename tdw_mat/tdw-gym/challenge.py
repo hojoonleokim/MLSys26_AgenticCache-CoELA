@@ -40,63 +40,85 @@ class Challenge:
 
         start = time.time()
         results = {}
+        episode_times = {}  # Dictionary to track time per episode
         for i, episode in enumerate(eval_episodes):
             start_time = time.time()
-            if os.path.exists(os.path.join(self.output_dir, str(episode), 'result_episode.json')):
-                with open(os.path.join(self.output_dir, str(episode), 'result_episode.json'), 'r') as f:
+            episode_dir = os.path.join(self.output_dir, str(episode))
+            if os.path.exists(os.path.join(episode_dir, 'result_episode.json')):
+                with open(os.path.join(episode_dir, 'result_episode.json'), 'r') as f:
                     result = json.load(f)
                 total_finish += result['finish'] / result['total']
                 results[episode] = result
                 continue
             # The episode has been evaluated before
 
-            if not os.path.exists(os.path.join(self.output_dir, str(episode))):
-                os.makedirs(os.path.join(self.output_dir, str(episode)))
+            if not os.path.exists(episode_dir):
+                os.makedirs(episode_dir)
             self.logger.info('Episode {} ({}/{})'.format(episode, i + 1, num_eval_episodes))
             self.logger.info(f"Resetting Environment ... data is {self.data[episode]}")
-            state, info, env_api = self.env.reset(seed=self.data[episode]['seed'], options=self.data[episode], output_dir = os.path.join(self.output_dir, str(episode)))
+            state, info, env_api = self.env.reset(seed=self.data[episode]['seed'], options=self.data[episode], output_dir = episode_dir)
             for id, agent in enumerate(agents):
                 if type(env_api) == list:
                     curr_api = env_api[id]
                 else: curr_api = env_api
                 if info['goal_description'] is not None:
                     if agent.agent_type == 'h_agent':
-                        agent.reset(goal_objects = info['goal_description'], output_dir = os.path.join(self.output_dir, str(episode)), env_api = curr_api, agent_color = info['agent_colors'][id], agent_id = id, gt_mask = self.gt_mask, save_img = self.save_img)
+                        agent.reset(goal_objects = info['goal_description'], output_dir = episode_dir, env_api = curr_api, agent_color = info['agent_colors'][id], agent_id = id, gt_mask = self.gt_mask, save_img = self.save_img)
                     elif agent.agent_type == 'lm_agent':
-                        agent.reset(obs = state[str(id)], goal_objects = info['goal_description'], output_dir = os.path.join(self.output_dir, str(episode)), env_api = curr_api, agent_color = info['agent_colors'][id], agent_id = id, rooms_name=info['rooms_name'], gt_mask = self.gt_mask, save_img = self.save_img)
+                        agent.reset(obs = state[str(id)], goal_objects = info['goal_description'], output_dir = episode_dir, env_api = curr_api, agent_color = info['agent_colors'][id], agent_id = id, rooms_name=info['rooms_name'], gt_mask = self.gt_mask, save_img = self.save_img)
                     else:
                         raise Exception(f"{agent.agent_type} not available")
                 else:
-                    agent.reset(output_dir = os.path.join(self.output_dir, str(episode)))
+                    agent.reset(output_dir = episode_dir)
             self.logger.info(f"Environment Reset. Took {time.time() - start_time} secs")
             local_finish = self.env.check_goal()
             done = False
             step_num = 0
             local_reward = 0.0
+            episode_start_time = time.time()
             while not done:
                 step_num += 1
                 actions = {}
-                if self.save_img: self.env.save_images(os.path.join(self.output_dir, str(episode), 'Images'))
+                if self.save_img: self.env.save_images(os.path.join(episode_dir, 'Images'))
                 for agent_id, agent in enumerate(agents):
                     actions[str(agent_id)] = agent.act(state[str(agent_id)])
                 state, reward, done, info = self.env.step(actions)
                 local_reward += reward
                 local_finish = self.env.check_goal()
                 self.logger.info(f"Executing step {step_num} for episode: {episode}, actions: {actions}, finish: {local_finish}, frame: {self.env.num_frames}")
+                if self.env.num_frames >= self.max_frames:
+                    self.logger.info(f"Episode {episode} reached max frames ({self.max_frames}). Stopping.")
+                    done = True
                 if done:
                     break
+            
+            episode_end_time = time.time()
+            episode_time_elapsed = episode_end_time - episode_start_time
+            episode_times[episode] = episode_time_elapsed
+            self.logger.info(f'Episode {episode}: Completed in {episode_time_elapsed:.2f} seconds')
+
             total_finish += local_finish[0] / local_finish[1]
             result = {
                 "finish": local_finish[0],
                 "total": local_finish[1],
+                "time_elapsed": episode_time_elapsed,
             }
-            with open(os.path.join(self.output_dir, str(episode), 'result_episode.json'), 'w') as f:
+            with open(os.path.join(episode_dir, 'result_episode.json'), 'w') as f:
                 json.dump(result, f)
             results[episode] = result
         avg_finish = total_finish / num_eval_episodes
+        
+        # Calculate average episode time
+        if episode_times:
+            avg_time = sum(episode_times.values()) / len(episode_times)
+        else:
+            avg_time = 0
+
         results = {
             "episode_results": results,
-            "avg_finish": avg_finish
+            "avg_finish": avg_finish,
+            "episode_times": episode_times,
+            "avg_episode_time": avg_time
         }
         with open(os.path.join(self.output_dir, 'eval_result.json'), 'w') as f:
             json.dump(results, f, indent=4)
@@ -129,7 +151,7 @@ def main():
     parser.add_argument("--experiment_name", type = str, default = "try")
     parser.add_argument("--run_id", type=str, default='run_0')
     parser.add_argument("--data_path", type=str, default="test_env.json")
-    parser.add_argument("--data_prefix", type=str, default="dataset/dataset_train/")
+    parser.add_argument("--data_prefix", type=str, default="dataset/test_2/")
     parser.add_argument("--port", default=1071, type=int)
     parser.add_argument("--agents", nargs='+', type=str, default=("h_agent",))
     parser.add_argument("--eval_episodes", nargs='+', default=(-1,), type=int, help="which episodes to evaluate on")

@@ -1,0 +1,32 @@
+Found 6 HE directories and 12 Non-HE directories.
+--------------------------------------------------------------------------------
+Group      | Count | Avg Latency (s)      | Avg Total Tokens    
+--------------------------------------------------------------------------------
+HE         | 6     | 1322.54              | 104569.17           
+Non-HE     | 12    | 1901.44              | 98208.25            
+--------------------------------------------------------------------------------
+
+[Detailed Breakdown]
+
+Group: HE
+  - eval_10objs_2a_food_gpt-5-2025-08-07_HE: Latency=1550.36s, Tokens=64985
+  - eval_10objs_2a_food_gpt-5-mini-2025-08-07_HE: Latency=1130.69s, Tokens=67386
+  - eval_10objs_2a_food_gpt-5-nano-2025-08-07_HE: Latency=1597.53s, Tokens=141895
+  - eval_10objs_2a_stuff_gpt-5-2025-08-07_HE: Latency=1194.64s, Tokens=94623
+  - eval_10objs_2a_stuff_gpt-5-mini-2025-08-07_HE: Latency=1212.50s, Tokens=90950
+  - eval_10objs_2a_stuff_gpt-5-nano-2025-08-07_HE: Latency=1249.56s, Tokens=167576
+
+Group: Non-HE
+  - eval_10objs_4a_food_gpt-5-2025-08-07: Latency=1930.19s, Tokens=83554
+  - eval_10objs_4a_food_gpt-5-mini-2025-08-07: Latency=2112.73s, Tokens=64081
+  - eval_10objs_4a_food_gpt-5-nano-2025-08-07: Latency=1778.65s, Tokens=129551
+  - eval_10objs_4a_stuff_gpt-5-2025-08-07: Latency=1903.71s, Tokens=74945
+  - eval_10objs_4a_stuff_gpt-5-mini-2025-08-07: Latency=2046.81s, Tokens=64318
+  - eval_10objs_4a_stuff_gpt-5-nano-2025-08-07: Latency=2084.75s, Tokens=189355
+  - eval_10objs_5a_food_gpt-5-2025-08-07: Latency=1647.52s, Tokens=77520
+  - eval_10objs_5a_food_gpt-5-mini-2025-08-07: Latency=2038.60s, Tokens=67620
+  - eval_10objs_5a_food_gpt-5-nano-2025-08-07: Latency=2132.97s, Tokens=138242
+  - eval_10objs_5a_stuff_gpt-5-2025-08-07: Latency=1565.99s, Tokens=86758
+  - eval_10objs_5a_stuff_gpt-5-mini-2025-08-07: Latency=1845.56s, Tokens=75692
+  - eval_10objs_5a_stuff_gpt-5-nano-2025-08-07: Latency=1729.77s, Tokens=126863
+

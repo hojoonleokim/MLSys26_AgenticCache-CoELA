@@ -69,7 +69,7 @@ class lm_agent:
         self.communication = args.communication
         self.cot = args.cot
         self.args = args
-        self.LLM = LLM(self.source, self.lm_id, self.prompt_template_path, self.communication, self.cot, self.args, self.agent_id)
+        self.LLM = LLM(self.source, self.lm_id, self.prompt_template_path, self.communication, self.cot, self.args, self.agent_id, output_dir=self.output_dir)
         self.action_history = []
         self.dialogue_history = []
         self.plan = None
@@ -309,6 +309,85 @@ class lm_agent:
         # print(self.rooms_name)
         self.LLM.reset(self.rooms_name, self.goal_objects)
         self.save_img = save_img
+        self.plan_sequence_log = []
+
+    @staticmethod
+    def classify_action_type(plan_text):
+        if plan_text is None:
+            return 'unknown'
+        p = plan_text.lower()
+        if p.startswith('send a message'):
+            return 'sendmessage'
+        elif p.startswith('put'):
+            return 'putin'
+        elif p.startswith('go grasp target'):
+            return 'gograsp_target'
+        elif p.startswith('go grasp container'):
+            return 'gograsp_container'
+        elif p.startswith('transport'):
+            return 'transport'
+        elif p.startswith('explore'):
+            return 'explore'
+        elif p.startswith('go to'):
+            return 'goto'
+        elif p.startswith('wait') or p.startswith('[wait'):
+            return 'wait'
+        else:
+            return 'unknown'
+
+    def write_plan_sequence_log(self, plan, a_info):
+        available_plans_list = a_info.get('available_plans_list', [])
+        available_types = [self.classify_action_type(p) for p in available_plans_list]
+        selected_type = self.classify_action_type(plan)
+        rooms_explored_count = sum(1 for v in self.rooms_explored.values() if v == 'all')
+        rooms_partial_count = sum(1 for v in self.rooms_explored.values() if v == 'part')
+        held_count = len(self.holding_objects_id)
+        container_held = 1 if any(x['type'] == 1 for x in self.obs['held_objects'] if x['type'] is not None) else 0
+        satisfied_count = len([x for x in self.satisfied if x in self.object_info and self.object_info[x].get('type') == 0])
+        known_targets = len(self.object_list[0]) if self.object_list else 0
+        known_containers = len(self.object_list[1]) if self.object_list else 0
+        total_rooms = len(self.rooms_name) if self.rooms_name else 0
+        unexplored_rooms = total_rooms - rooms_explored_count - rooms_partial_count
+        # Extract target from plan (room name for goto/explore, object for gograsp)
+        target_in_plan = None
+        if selected_type == 'goto' and plan:
+            target_in_plan = ' '.join(plan.split(' ')[2:4]).rstrip(',')
+        elif selected_type == 'explore' and plan:
+            target_in_plan = ' '.join(plan.split(' ')[-2:])
+        elif selected_type in ('gograsp_target', 'gograsp_container') and plan:
+            target_in_plan = plan.split('>')[-1].strip() if '>' in plan else None
+        # Check if previous plan completed or was interrupted
+        prev_plan_completed = None
+        if len(self.plan_sequence_log) > 0:
+            prev_type = self.plan_sequence_log[-1]['selected_type']
+            prev_plan_completed = (prev_type != selected_type) or (selected_type == 'sendmessage')
+        entry = {
+            'agent_id': self.agent_id,
+            'frame': self.num_frames,
+            'step': self.steps,
+            'selected_plan': plan,
+            'selected_type': selected_type,
+            'available_plans': available_plans_list,
+            'available_types': available_types,
+            'num_available': len(available_plans_list),
+            'rooms_explored_all': rooms_explored_count,
+            'rooms_explored_part': rooms_partial_count,
+            'current_room': self.current_room,
+            'held_count': held_count,
+            'container_held': container_held,
+            'satisfied_count': satisfied_count,
+            'known_targets_count': known_targets,
+            'known_containers_count': known_containers,
+            'oppo_last_room': self.oppo_last_room,
+            'total_rooms': total_rooms,
+            'unexplored_rooms': unexplored_rooms,
+            'target_in_plan': target_in_plan,
+            'prev_plan_completed': prev_plan_completed,
+        }
+        self.plan_sequence_log.append(entry)
+        log_path = os.path.join(self.output_dir, f'plan_sequence_agent_{self.agent_id}.jsonl')
+        with open(log_path, 'a') as f:
+            f.write(json.dumps(entry) + '\n')
 
     def move(self, target_pos):
         self.local_step += 1
@@ -580,6 +659,7 @@ class lm_agent:
                     plan = f"[wait]"
                 self.plan = plan
                 self.action_history.append(f"{'send a message' if plan.startswith('send a message:') else plan} at step {self.num_frames}")
+                self.write_plan_sequence_log(plan, a_info)
                 a_info.update({"Frames": self.num_frames})
                 info.update({"LLM": a_info})
                 lm_times += 1

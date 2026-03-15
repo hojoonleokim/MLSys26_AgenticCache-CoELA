@@ -142,3 +142,4 @@ transport_challenge_asset_bundles/
 LLM/chat_raw.json
 
 detection_pipeline/*.pth
+*.json

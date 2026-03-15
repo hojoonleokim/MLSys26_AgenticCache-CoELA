@@ -124,7 +124,7 @@ if __name__ == "__main__":
     task = "food"
     layout_type = [0, 1, 2]
 
-    train_dataset = "dataset/dataset_train"
+    train_dataset = "dataset/test_2"
     training_scene_list = ["1a", "4a"]
     for i in [8, 9]:
         for layout in layout_type:
@@ -133,7 +133,7 @@ if __name__ == "__main__":
                 print(_dir)
                 generate_imgs(_dir, train_dataset, scene, layout, task)
 
-    # test_dataset = "dataset/dataset_test"
+    # test_dataset = "dataset/test_1"
     # test_scene_list = ["2a", "5a"]
     # for i in range(4):
     #     for layout in layout_type:

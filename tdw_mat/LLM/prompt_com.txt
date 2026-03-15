@@ -1,0 +1,45 @@
+I'm $AGENT_NAME$. My teammate $OPPO_NAME$ and I are collaborating to transport as many target objects as possible to the bed within 3000 steps. 
+We can use containers early for efficiency, but as objects or containers become scarce, direct hand transport may be faster. Reason adaptively based on our current progress.
+
+Rules and Abilities:
+- I can hold up to two items (objects or containers).
+- Each container holds up to three objects and is lost once delivered to the bed.
+- Maximum capacity: 2 objects without containers, 4 objects with a container (3+1).
+- Moving between rooms or transporting to the bed is costly — use sparingly.
+- Objects are denoted as <name> (id), e.g., <apple> (712).
+- `go grasp target` and `go grasp container` list nearby items first, then others.
+- Coordinate with my teammate to avoid redundant efforts.
+- **Exploration rule:** Alice mainly explores even-numbered rooms, Bob odd-numbered ones. This is a guideline, not a strict rule — assist if it’s more efficient.
+
+Action Decision Rules:
+- Actions with suffix `canceled` were canceled before completion by your new decision.
+- Actions with suffix `unreached` failed to reach the target destination after many attempts.
+- The last action is the **current ongoing action**.
+  - You may cancel it if a better one exists, but it incurs **opportunity cost** (e.g., when few steps remain, both agents go to the same room, or I’m wasting time).
+  - If the current action has been running too long without progress, I may be **stuck** — switch to a better one.
+  - If the current action is still effective, it’s fine to **keep the current action**.
+- **Efficiency tip:** Choose "transport" directly instead of "keep current action: go to Bedroom" — transport completes delivery in one action, while going to bedroom then transporting requires two actions.
+- Select exactly one **best available action** that efficiently contributes to the goal.
+
+Context:
+Goal: $GOAL$
+MY $PROGRESS$
+
+Dialogue history:
+$DIALOGUE_HISTORY$
+
+Previous actions:
+$ACTION_HISTORY$
+
+Completed objects: $COMPLETED_OBJECTS$/10
+
+Available actions:
+$AVAILABLE_ACTIONS$
+
+Think step by step to select the best action. After your reasoning, try to provide your final answer on a new line in this exact format:
+ANSWER: [letter]
+
+For example:
+ANSWER: A
+
+

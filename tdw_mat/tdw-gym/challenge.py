@@ -73,6 +73,7 @@ class Challenge:
             done = False
             step_num = 0
             local_reward = 0.0
+            real_start_time = time.time()
             while not done:
                 step_num += 1
                 actions = {}
@@ -85,11 +86,18 @@ class Challenge:
                 self.logger.info(f"Executing step {step_num} for episode: {episode}, actions: {actions}, finish: {local_finish}, frame: {self.env.num_frames}")
                 if done:
                     break
+            end_time = time.time()
+            # Cleanup agents to collect any pending LLM results
+            for agent in agents:
+                if hasattr(agent, 'cleanup'):
+                    agent.cleanup()
             total_finish += local_finish[0] / local_finish[1]
             result = {
                 "finish": local_finish[0],
                 "total": local_finish[1],
+                "elapsed_times": end_time - real_start_time,
             }
+
             with open(os.path.join(self.output_dir, str(episode), 'result_episode.json'), 'w') as f:
                 json.dump(result, f)
             results[episode] = result
@@ -129,7 +137,7 @@ def main():
     parser.add_argument("--experiment_name", type = str, default = "try")
     parser.add_argument("--run_id", type=str, default='run_0')
     parser.add_argument("--data_path", type=str, default="test_env.json")
-    parser.add_argument("--data_prefix", type=str, default="dataset/dataset_train/")
+    parser.add_argument("--data_prefix", type=str, default="dataset/test_2/")
     parser.add_argument("--port", default=1071, type=int)
     parser.add_argument("--agents", nargs='+', type=str, default=("h_agent",))
     parser.add_argument("--eval_episodes", nargs='+', default=(-1,), type=int, help="which episodes to evaluate on")

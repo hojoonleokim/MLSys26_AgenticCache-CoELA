@@ -9,11 +9,79 @@ import math
 import copy
 from PIL import Image
 from agent_memory import AgentMemory
+from multiprocessing import Pool, Manager
 
 from LLM.LLM import LLM
 
 CELL_SIZE = 0.125
 ANGLE = 15
+
+# Global worker LLM instance for async processing
+_worker_llm = None
+
+def _pool_init_llm(llm_args):
+    """Initialize LLM instance in worker process"""
+    global _worker_llm
+    from LLM.LLM import LLM
+    
+    # Unpack LLM arguments
+    source, lm_id, prompt_template_path, communication, cot, args, agent_id, output_dir = llm_args
+    
+    # Initialize LLM instance
+    _worker_llm = LLM(source, lm_id, prompt_template_path, communication, cot, args, agent_id, output_dir)
+
+def _pool_reset_llm(rooms_name, goal_objects):
+    """Reset LLM instance in worker process"""
+    global _worker_llm
+    import os
+    worker_pid = os.getpid()
+    print(f"[Worker {worker_pid}] Resetting LLM")
+    if _worker_llm is not None:
+        _worker_llm.reset(rooms_name, goal_objects)
+        print(f"[Worker {worker_pid}] Reset completed")
+    else:
+        print(f"[Worker {worker_pid}] WARNING: _worker_llm is None!")
+
+def _pool_reset_llm_wrapper(args):
+    """Wrapper for pool.map which only accepts single argument"""
+    rooms_name, goal_objects = args
+    return _pool_reset_llm(rooms_name, goal_objects)
+
+def async_llm_worker(llm_args, done_flag, result_plan, result_info):
+    """Worker function that runs LLM planning in a separate process"""
+    try:
+        global _worker_llm
+        
+        # Unpack arguments
+        num_frames, current_room, rooms_explored, held_objects, satisfied_objects, object_list, object_per_room, action_history, dialogue_history, oppo_held_objects, oppo_last_room = llm_args
+        
+        # Use the global LLM instance
+        if _worker_llm is None:
+            raise RuntimeError("Worker LLM not initialized. Call _pool_init_llm first.")
+        
+        plan, a_info = _worker_llm.run(
+            num_frames, current_room, rooms_explored, held_objects,
+            satisfied_objects, object_list, object_per_room, action_history,
+            dialogue_history, oppo_held_objects, oppo_last_room
+        )
+
+        # Store results in shared memory
+        result_plan['plan'] = plan
+        result_plan['a_info'] = a_info
+        result_info['success'] = True
+        
+        # Set done flag
+        done_flag.value = True
+        
+    except Exception as e:
+        print(f"Error in async LLM worker: {e}")
+        import traceback
+        traceback.print_exc()
+        result_plan['plan'] = None
+        result_plan['a_info'] = None
+        result_info['error'] = str(e)
+        result_info['success'] = False
+        done_flag.value = True
 
 class lm_agent:
     def  __init__(self, agent_id, logger, max_frames, args, output_dir = 'results'):
@@ -69,8 +137,9 @@ class lm_agent:
         self.communication = args.communication
         self.cot = args.cot
         self.args = args
-        self.LLM = LLM(self.source, self.lm_id, self.prompt_template_path, self.communication, self.cot, self.args, self.agent_id)
+        self.LLM = LLM(self.source, self.lm_id, self.prompt_template_path, self.communication, self.cot, self.args, self.agent_id, self.output_dir)
         self.action_history = []
+        self.action_history_count = 0
         self.dialogue_history = []
         self.plan = None
 
@@ -85,6 +154,24 @@ class lm_agent:
         self.rotated = None
         self.navigation_threshold = 5
         self.detection_threshold = 5
+        
+        # Initialize async LLM processing components
+        self.manager = Manager()
+        
+        # LLM pool - manage 1 async LLM query
+        self.llm_done_flag = self.manager.Value('b', False)
+        self.llm_async_plan = self.manager.dict()
+        self.llm_async_info = self.manager.dict()
+        self.llm_async_result = None
+        self.llm_running = False
+        
+        # Create process pool with initializer
+        self.llm_args = (self.source, self.lm_id, self.prompt_template_path, 
+                        self.communication, self.cot, self.args, self.agent_id, self.output_dir)
+        self.llm_pool = None
+        self.llm_plan_cache = {}  # Dict for storing async LLM results: {step_num: plan}
+        self.llm_issue_step = None  # Track which step the async query was issued for
+        self.llm_lock = False  # Lock to prevent multiple async queries
 
 
     def pos2map(self, x, z):
@@ -309,6 +396,37 @@ class lm_agent:
         # print(self.rooms_name)
         self.LLM.reset(self.rooms_name, self.goal_objects)
         self.save_img = save_img
+        
+        # Reset async LLM pool
+        if hasattr(self, 'llm_pool') and self.llm_pool is not None:
+            try:
+                self.llm_pool.terminate()
+                self.llm_pool.join()
+            except Exception as e:
+                print(f"Warning: Error terminating LLM pool: {e}")
+        
+        # Recreate the pool for the new episode
+        self.llm_pool = Pool(
+            processes=1,
+            initializer=_pool_init_llm,
+            initargs=(self.llm_args,)
+        )
+        
+        # Reset LLM in worker process with current episode info
+        try:
+            self.llm_pool.map(_pool_reset_llm_wrapper, [(self.rooms_name, self.goal_objects)])
+        except Exception as e:
+            print(f"Warning: Could not reset worker LLM: {e}")
+        
+        # Reset all async-related state
+        self.llm_async_result = None
+        self.llm_done_flag.value = False
+        self.llm_running = False
+        self.llm_async_plan.clear()
+        self.llm_async_info.clear()
+        self.llm_plan_cache.clear()
+        self.llm_issue_step = None
+        self.llm_lock = False
 
     def move(self, target_pos):
         self.local_step += 1
@@ -344,7 +462,7 @@ class lm_agent:
         if self.rotated is None:
             self.rotated = 0
         if self.rotated == 16:
-            self.roatated = 0
+            self.rotated = 0
             self.rooms_explored[target_room] = 'all'
             self.plan = None
             return None
@@ -424,6 +542,106 @@ class lm_agent:
 
     def LLM_plan(self):
         return self.LLM.run(self.num_frames, self.current_room, self.rooms_explored, self.obs['held_objects'],[self.object_info[x] for x in self.satisfied if x in self.object_info], self.object_list, self.object_per_room, self.action_history, self.dialogue_history, self.obs['oppo_held_objects'], self.oppo_last_room)
+    
+    def submit_async_llm_query(self, step_num):
+        """Submit an async LLM query to the pool
+        
+        Args:
+            step_num: The step number to generate plan for.
+        """
+        if self.llm_pool is None:
+            raise RuntimeError("LLM pool not initialized")
+        
+        if self.llm_running:
+            print(f"Warning: LLM pool is busy. Query not submitted.")
+            return False
+        
+        # Count action history and store as class variable
+        self.action_history_count = len(self.action_history)
+        print(f"[Step {step_num}] Submitting async LLM query with {self.action_history_count} items in action_history")
+        
+        # Prepare arguments for LLM worker
+        satisfied_objects = [self.object_info[x] for x in self.satisfied if x in self.object_info]
+        llm_args = (
+            self.num_frames, self.current_room, self.rooms_explored, 
+            self.obs['held_objects'], satisfied_objects, self.object_list, 
+            self.object_per_room, self.action_history, self.dialogue_history, 
+            self.obs['oppo_held_objects'], self.oppo_last_room
+        )
+        
+        # Reset shared state
+        self.llm_done_flag.value = False
+        self.llm_async_plan.clear()
+        self.llm_async_info.clear()
+        
+        # Record the step this query was issued for
+        self.llm_issue_step = step_num
+        
+        # Submit async task
+        self.llm_async_result = self.llm_pool.apply_async(
+            async_llm_worker,
+            (llm_args, self.llm_done_flag, self.llm_async_plan, self.llm_async_info)
+        )
+        self.llm_running = True
+        return True
+    
+    def check_async_llm_result(self):
+        """Check async LLM query and write completed result to self.llm_plan_cache
+        
+        Returns:
+            int or None: The step number of newly arrived result, or None if no new result
+        """
+        if self.llm_running and self.llm_done_flag.value:
+            issue_step = self.llm_issue_step
+            
+            try:
+                self.llm_async_result.get(timeout=0.1)
+                plan = self.llm_async_plan.get('plan', None)
+                a_info = self.llm_async_plan.get('a_info', None)
+                
+                # Store result in dict with step_num as key
+                if issue_step is not None and plan is not None:
+                    self.llm_plan_cache[issue_step] = {'plan': plan, 'a_info': a_info}
+                
+                # Clear this slot
+                self.llm_async_result = None
+                self.llm_running = False
+                self.llm_done_flag.value = False
+                self.llm_issue_step = None
+                self.llm_async_plan.clear()
+                self.llm_async_info.clear()
+                
+                return issue_step  # Return the step that just arrived
+            except Exception as e:
+                print(f"Error retrieving LLM pool result: {e}")
+        
+        return None  # No new result
+
+    def cleanup(self):
+        """Clean up multiprocessing resources"""
+        from multiprocessing import TimeoutError
+        
+        # Collect running result with timeout before closing
+        if hasattr(self, 'llm_pool') and self.llm_pool is not None:
+            if self.llm_running and self.llm_async_result is not None:
+                try:
+                    # Wait up to 30 seconds for this result
+                    self.llm_async_result.get(timeout=60)
+                    # Extract and store the result
+                    plan = self.llm_async_plan.get('plan', None)
+                    a_info = self.llm_async_plan.get('a_info', None)
+                    issue_step = self.llm_issue_step
+                    if plan is not None and issue_step is not None:
+                        self.llm_plan_cache[issue_step] = {'plan': plan, 'a_info': a_info}
+                        print(f"Collected LLM pool result during cleanup (step {issue_step})")
+                except TimeoutError:
+                    print(f"Warning: Timeout waiting for LLM pool. Force closing.")
+                except Exception as e:
+                    print(f"Warning: Error collecting LLM pool result: {e}")
+            
+            self.llm_pool.close()
+            self.llm_pool.join()
+            self.llm_pool = None
 
     def act(self, obs):
         self.obs = obs.copy()
@@ -565,6 +783,52 @@ class lm_agent:
                 'obs': {k: v for k, v in self.obs.items() if k not in ['rgb', 'depth', 'seg_mask', 'camera_matrix', 'visible_objects']},
               }
 
+        # Check if there's a newer cached plan that can replace current plan
+        newly_arrived_step = self.check_async_llm_result()
+        # Only allow plan switching if last action was move (0) or turn (1, 2)
+        allow_plan_switching = True
+        if self.last_action is not None and isinstance(self.last_action, dict) and 'type' in self.last_action:
+            if self.last_action['type'] not in [0, 1, 2]:
+                allow_plan_switching = False
+        
+        # Only switch if we have a newly arrived result
+        if allow_plan_switching and self.plan is not None and newly_arrived_step is not None:
+            result = self.llm_plan_cache[newly_arrived_step]
+            cached_plan = result['plan']
+            
+            # Skip if cached plan is a message
+            if cached_plan.startswith('send a message:'):
+                pass  # Don't replace with message plans
+            # Check if cached plan is different from current plan
+            elif cached_plan != self.plan:
+                # Check if cached plan is still available in current situation
+                self.LLM.current_room = self.current_room
+                self.LLM.rooms_explored = self.rooms_explored
+                self.LLM.holding_objects = self.obs['held_objects']
+                self.LLM.object_list = self.object_list
+                self.LLM.obj_per_room = self.object_per_room
+                
+                _, _, available_plans_list = self.LLM.get_available_plans(message=None)
+                
+                if cached_plan in available_plans_list:
+                    # Check if plan already exists in recent action_history
+                    start_idx = max(0, self.action_history_count - 1)
+                    recent_plans = [action.split(' at step ')[0] for action in self.action_history[start_idx:]]
+                    cached_plan_name = 'send a message' if cached_plan.startswith('send a message:') else cached_plan
+                    
+                    if cached_plan_name not in recent_plans:
+                        print(f"Replacing current plan '{self.plan}' with cached plan '{cached_plan}' at step {self.num_frames}")
+                        self.plan = cached_plan
+                        self.target_pos = None  # Reset target position for new plan
+                        self.action_history[-1] = self.action_history[-1].replace(self.action_history[-1].split(' at step ')[0], cached_plan_name)
+                        a_info = result.get('a_info', {})
+                        a_info.update({"Frames": self.num_frames})
+                        info.update({"LLM": a_info})
+                    else:
+                        print(f"Cached plan '{cached_plan}' already executed in recent history, skipping replacement")
+                else:
+                    print(f"Cached plan '{cached_plan}' no longer available, keeping current plan '{self.plan}'")
+
         action = None
         lm_times = 0
         while action is None:
@@ -574,7 +838,75 @@ class lm_agent:
                     print(info)
                 if lm_times > 3:
                     raise Exception(f"retrying LM_plan too many times")
-                plan, a_info = self.LLM_plan()
+
+                # Wait for LLM result if running
+                if self.llm_running:
+                    print("LLM is busy. Waiting for result...")
+                    wait_count = 0
+                    while self.llm_running:
+                        self.check_async_llm_result()
+                        # Also check if worker process crashed without setting done_flag
+                        if self.llm_async_result is not None and self.llm_async_result.ready():
+                            try:
+                                self.llm_async_result.get(timeout=0.1)
+                            except Exception as e:
+                                print(f"Async LLM worker crashed: {e}")
+                            self.llm_async_result = None
+                            self.llm_running = False
+                            self.llm_done_flag.value = False
+                            self.llm_issue_step = None
+                            break
+                        time.sleep(0.1)
+                        wait_count += 1
+                        if wait_count > 600:  # 60s timeout
+                            print("Async LLM timeout (60s). Falling back to sync.")
+                            self.llm_running = False
+                            break
+                    print("LLM wait finished.")
+                else:
+                    self.check_async_llm_result()
+                
+                plan = None
+                a_info = {}
+                self.llm_lock = False
+                # Get the plan with the largest frame number
+                if self.llm_plan_cache:
+                    max_step = max(self.llm_plan_cache.keys())
+                    result = self.llm_plan_cache[max_step]
+                    plan = result['plan']
+                    a_info = result.get('a_info', {})
+                    
+                    # Check if plan already exists in recent action_history since query was submitted
+                    start_idx = max(0, self.action_history_count - 1)
+                    recent_plans = [action.split(' at step ')[0] for action in self.action_history[start_idx:]]
+                    plan_name = 'send a message' if plan.startswith('send a message:') else plan
+                    if plan_name in recent_plans:
+                        print(f"Warning: Cached plan '{plan}' already executed in recent history. Recomputing...")
+                        plan = None
+                        a_info = {}
+                    
+                    # Check if plan is in current available plans
+                    if plan is not None:
+                        self.LLM.current_room = self.current_room
+                        self.LLM.rooms_explored = self.rooms_explored
+                        self.LLM.holding_objects = self.obs['held_objects']
+                        self.LLM.object_list = self.object_list
+                        self.LLM.obj_per_room = self.object_per_room
+                        if plan.startswith('send a message:'):
+                            message = plan[len('send a message:'):].strip()
+                        else:
+                            message = None
+                        _, _, available_plans_list = self.LLM.get_available_plans(message=message)
+                        
+                        if plan not in available_plans_list:
+                            print(f"Warning: Cached plan '{plan}' not in current available plans. Recomputing...")
+                            plan = None
+                            a_info = {}
+
+                if plan is None:
+                    # No cached result, call synchronously
+                    plan, a_info = self.LLM_plan()
+                
                 if plan is None: # NO AVAILABLE PLANS! Explore from scratch!
                     print("No more things to do!")
                     plan = f"[wait]"
@@ -611,4 +943,10 @@ class lm_agent:
             self.logger.info(self.plan)
             self.logger.debug(info)
         self.last_action = action
+        
+        # Submit async LLM query for next step if not already running
+        if not self.llm_running and not self.llm_lock:
+            self.llm_lock = True
+            self.submit_async_llm_query(self.num_frames)
+        
         return action

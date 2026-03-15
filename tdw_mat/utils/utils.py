@@ -137,7 +137,7 @@ if __name__ == "__main__":
     parser.add_argument("--single_log_dir", type=str)
     parser.add_argument("--eval_comm", action='store_true', help="calculate number of the comm")
     parser.add_argument("--eval_individual", action='store_true', help="calculate transport rate of individual cases, such as enough / rare container cases and food / stuff cases")
-    parser.add_argument("--dataset_config_path", type=str, default = "dataset/dataset_test/test_env.json")
+    parser.add_argument("--dataset_config_path", type=str, default = "dataset/test_1/test_env.json")
     args = parser.parse_args()
     log_dir = args.log_dir
     dataset_config = json.load(open(args.dataset_config_path, 'r'))

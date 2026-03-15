@@ -7,9 +7,9 @@ import backoff
 import torch
 from tqdm import tqdm
 from transformers import AutoTokenizer, AutoModelForCausalLM, LlamaForCausalLM, LlamaTokenizer
-from openai import AzureOpenAI
+from openai import AzureOpenAI, OpenAI
 from openai import OpenAIError
-
+import os
 class LLM:
     def __init__(self,
                  source,  # 'huggingface' or 'openai'
@@ -18,7 +18,8 @@ class LLM:
                  communication,
                  cot,
                  sampling_parameters,
-                 agent_id
+                 agent_id,
+                 output_dir='results'
                  ):
         self.rooms_explored = None
         self.goal_desc = None
@@ -26,16 +27,35 @@ class LLM:
         self.agent_name = "Alice" if agent_id == 0 else "Bob"
         self.oppo_name = "Alice" if agent_id == 1 else "Bob"
         self.oppo_pronoun = "she" if agent_id == 1 else "he"
+        self.output_dir = output_dir
         self.debug = sampling_parameters.debug
+        self.run_id = sampling_parameters.run_id if hasattr(sampling_parameters, 'run_id') else 'run_0'
         self.rooms = []
         self.prompt_template_path = prompt_template_path
         self.single = 'single' in self.prompt_template_path
-        df = pd.read_csv(self.prompt_template_path)
-        self.prompt_template = df['prompt'][0].replace("$AGENT_NAME$", self.agent_name).replace("$OPPO_NAME$", self.oppo_name)
-        if communication:
-            self.generator_prompt_template = df['prompt'][1].replace("$AGENT_NAME$", self.agent_name).replace("$OPPO_NAME$", self.oppo_name)
+        
+        # Read prompts from TXT file (CSV format also supported for backward compatibility)
+        if self.prompt_template_path.endswith('.txt'):
+            with open(self.prompt_template_path, 'r') as f:
+                content = f.read().strip()
+            
+            self.prompt_template = content.replace("$AGENT_NAME$", self.agent_name).replace("$OPPO_NAME$", self.oppo_name)
+            # Load gen_prompt.txt for communication message generation
+            gen_prompt_path = self.prompt_template_path.replace('prompt_com.txt', 'gen_prompt.txt')
+            if communication and os.path.exists(gen_prompt_path):
+                with open(gen_prompt_path, 'r') as f:
+                    gen_content = f.read().strip()
+                self.generator_prompt_template = gen_content.replace("$AGENT_NAME$", self.agent_name).replace("$OPPO_NAME$", self.oppo_name)
+            else:
+                self.generator_prompt_template = None
         else:
-            self.generator_prompt_template = None
+            # Backward compatibility for CSV format
+            df = pd.read_csv(self.prompt_template_path)
+            self.prompt_template = df['prompt'][0].replace("$AGENT_NAME$", self.agent_name).replace("$OPPO_NAME$", self.oppo_name)
+            if communication:
+                self.generator_prompt_template = df['prompt'][1].replace("$AGENT_NAME$", self.agent_name).replace("$OPPO_NAME$", self.oppo_name)
+            else:
+                self.generator_prompt_template = None
 
         self.communication = communication
         self.cot = cot
@@ -43,13 +63,13 @@ class LLM:
         self.model = None
         self.tokenizer = None
         self.lm_id = lm_id
-        self.chat = 'gpt-3.5-turbo' in lm_id or 'gpt-4' in lm_id or 'chat' in lm_id
+        self.chat = 'gpt-3.5-turbo' in lm_id or 'gpt-4' in lm_id or 'gpt-5' in lm_id or 'gpt-4.1' in lm_id or 'chat' in lm_id
         self.OPENAI_KEY = None
         self.total_cost = 0
 
         if self.source == "openai":
-            client = AzureOpenAI(
-                ### Enter your OpenAI API key here
+            client = OpenAI(
+                api_key=os.environ.get("OPENAI_API_KEY")
             )
             if self.chat:
                 self.sampling_params = {
@@ -90,15 +110,103 @@ class LLM:
             def openai_generate(prompt, sampling_params):
                 usage = 0
                 try:
-                    if self.chat:
-                        response = client.chat.completions.create(model=self.lm_id, messages=prompt, **sampling_params)
+                    if 'gpt-5' in self.lm_id or 'gpt-4.1' in self.lm_id:
+                        # Handle new GPT-5/GPT-4.1 models with different parameter requirements
+                        # Create a clean parameters dictionary with only supported parameters
+                        adapted_params = sampling_params.copy()
+                        
+                        # Convert max_tokens to max_completion_tokens - this is the only parameter we'll pass
+                        # Since other parameters like temperature and top_p appear to have restrictions
+                        if 'max_tokens' in sampling_params:
+                            adapted_params.pop('max_tokens')
+                        if 'temperature' in sampling_params:
+                            adapted_params['temperature'] = 1
+                        # We're not passing 'n', 'temperature', or 'top_p' to avoid further API errors
+                        # The model will use its defaults
+                        response = client.chat.completions.create(model=self.lm_id, messages=prompt, **adapted_params)
+                        llm_dir = os.path.join(self.output_dir, 'LLM')
+                        os.makedirs(llm_dir, exist_ok=True)
+                        with open(os.path.join(llm_dir, f"token_usage_agent_{self.agent_id}.txt"), 'a') as f:
+                            f.write(f"LM: {lm_id}\n")
+                            f.write(f"Agent: {self.agent_id}\n")
+                            f.write(f"Input tokens: {response.usage.prompt_tokens}\n")
+                            f.write(f"Output tokens: {response.usage.completion_tokens}\n")
+                            f.write(f"Total tokens: {response.usage.total_tokens}\n")
+                            f.write("=" * 80 + "\n\n")
+
+                        io_entry = {
+                            'input': [{'role': msg.get('role', ''), 'content': msg.get('content', '')} for msg in prompt],
+                            'output': response.choices[0].message.content,
+                        }
+                        with open(os.path.join(llm_dir, f"chat_io_agent_{self.agent_id}.jsonl"), 'a') as f:
+                            f.write(json.dumps(io_entry) + '\n')
+
                         if self.debug:
-                            with open(f"LLM/chat_raw.json", 'a') as f:
-                                f.write(json.dumps(response.choices[0].message.content, indent=4))
-                                f.write('\n')
+                            with open(os.path.join(llm_dir, f"token_usage_agent_{self.agent_id}.txt"), 'a') as f:
+                                f.write(f"LM: {lm_id}\n")
+                                f.write(f"Agent: {self.agent_id}\n")
+                                f.write(f"Input tokens: {response.usage.prompt_tokens}\n")
+                                f.write(f"Output tokens: {response.usage.completion_tokens}\n")
+                                f.write(f"Total tokens: {response.usage.total_tokens}\n")
+                                f.write("=" * 80 + "\n")
+                                f.write("INPUT PROMPT:\n")
+                                for i, msg in enumerate(prompt):
+                                    f.write(f"[{msg.get('role', 'unknown').upper()}]\n")
+                                    f.write(msg.get('content', '') + "\n")
+                                    if i < len(prompt) - 1:
+                                        f.write("\n")
+                                f.write("=" * 80 + "\n")
+                                f.write("OUTPUT:\n")
+                                f.write(response.choices[0].message.content + "\n")
+                                f.write("=" * 80 + "\n\n")
+                        # Use the actual number of choices returned rather than referencing 'n' parameter
+                        # since we're not sure if 'n' is in adapted_params
+                        generated_samples = [response.choices[i].message.content for i in
+                                             range(len(response.choices))]
+                        # Placeholder pricing for newer models
+                        usage = response.usage.total_tokens * 0.01 / 1000
+                    elif self.chat:
+                        # Handle traditional chat models (GPT-3.5, GPT-4)
+                        response = client.chat.completions.create(model=self.lm_id, messages=prompt, **sampling_params)
+                        llm_dir = os.path.join(self.output_dir, 'LLM')
+                        os.makedirs(llm_dir, exist_ok=True)
+                        with open(os.path.join(llm_dir, f"token_usage_agent_{self.agent_id}.txt"), 'a') as f:
+                            f.write(f"LM: {lm_id}\n")
+                            f.write(f"Agent: {self.agent_id}\n")
+                            f.write(f"Input tokens: {response.usage.prompt_tokens}\n")
+                            f.write(f"Output tokens: {response.usage.completion_tokens}\n")
+                            f.write(f"Total tokens: {response.usage.total_tokens}\n")
+                            f.write("=" * 80 + "\n\n")
+
+                        io_entry = {
+                            'input': [{'role': msg.get('role', ''), 'content': msg.get('content', '')} for msg in prompt],
+                            'output': response.choices[0].message.content,
+                        }
+                        with open(os.path.join(llm_dir, f"chat_io_agent_{self.agent_id}.jsonl"), 'a') as f:
+                            f.write(json.dumps(io_entry) + '\n')
+
+                        if self.debug:
+                            with open(os.path.join(llm_dir, f"token_usage_agent_{self.agent_id}.txt"), 'a') as f:
+                                f.write(f"LM: {lm_id}\n")
+                                f.write(f"Agent: {self.agent_id}\n")
+                                f.write(f"Input tokens: {response.usage.prompt_tokens}\n")
+                                f.write(f"Output tokens: {response.usage.completion_tokens}\n")
+                                f.write(f"Total tokens: {response.usage.total_tokens}\n")
+                                f.write("=" * 80 + "\n")
+                                f.write("INPUT PROMPT:\n")
+                                for i, msg in enumerate(prompt):
+                                    f.write(f"[{msg.get('role', 'unknown').upper()}]\n")
+                                    f.write(msg.get('content', '') + "\n")
+                                    if i < len(prompt) - 1:
+                                        f.write("\n")
+                                f.write("=" * 80 + "\n")
+                                f.write("OUTPUT:\n")
+                                f.write(response.choices[0].message.content + "\n")
+                                f.write("=" * 80 + "\n\n")
                         generated_samples = [response.choices[i].message.content for i in
                                              range(sampling_params['n'])]
-                        if 'gpt-4' or 'gpt4' in self.lm_id:
+                        # Handle pricing for different traditional models
+                        if ('gpt-4' in self.lm_id) or ('gpt4' in self.lm_id):
                             usage = response.usage.prompt_tokens * 0.03 / 1000 + response.usage.completion_tokens * 0.06 / 1000
                         elif 'gpt-3.5' in self.lm_id:
                             usage = response.usage.total_tokens * 0.002 / 1000
@@ -106,18 +214,21 @@ class LLM:
                     #                   range(sampling_params['n'])]
                     elif "text-" in lm_id:
                         response = client.completions.create(model=lm_id, prompt=prompt, **sampling_params)
-                        # print(json.dumps(response, indent=4))
-                        if self.debug:
-                            with open(f"LLM/raw.json", 'a') as f:
-                                f.write(json.dumps(response, indent=4))
-                                f.write('\n')
+                        # ## print(json.dumps(response, indent=4))
+                        llm_dir = os.path.join(self.output_dir, 'LLM')
+                        os.makedirs(llm_dir, exist_ok=True)
+                        with open(os.path.join(llm_dir, f"raw_v2_{lm_id}_agent_{self.agent_id}.json"), 'a') as f:
+                            f.write(f"LM: {lm_id}\n")
+                            f.write(f"Agent: {self.agent_id}\n")
+                            f.write(json.dumps(response, indent=4))
+                            f.write('\n')
                         generated_samples = [response.choices[i].text for i in range(sampling_params['n'])]
                     # mean_log_probs = [np.mean(response['choices'][i]['logprobs']['token_logprobs']) for i in
                     #               range(sampling_params['n'])]
                     else:
                         raise ValueError(f"{lm_id} not available!")
                 except OpenAIError as e:
-                    print(e)
+                    ## print(e)
                     raise e
                 return generated_samples, usage
 
@@ -214,6 +325,15 @@ class LLM:
 
     def parse_answer(self, available_actions, text):
         flags = 'AC'
+        
+        # Try to extract answer from "ANSWER: X" format
+        answer_match = re.search(r'ANSWER:\s*([A-Z])', text, re.IGNORECASE)
+        if answer_match:
+            option_letter = answer_match.group(1).upper()
+            option_index = ord(option_letter) - ord('A')
+            if 0 <= option_index < len(available_actions):
+                return available_actions[option_index], flags
+        
         for i in range(len(available_actions)):
             action = available_actions[i]
             if action.startswith("send a message:"):
@@ -436,7 +556,7 @@ class LLM:
         return s
 
 
-    def get_available_plans(self, message):
+    def get_available_plans(self, message, last_action=None):
         """
         go to room {}
         explore current room {}
@@ -446,8 +566,8 @@ class LLM:
         send a message: ""
         """
         available_plans = []
-        if self.communication and message is not None:
-            available_plans.append(f"send a message: {message}")
+        if self.communication and not (last_action and last_action.startswith("send a message")):
+            available_plans.append("send a message to my teammate")
         if self.holding_objects[0]['type'] is None or self.holding_objects[1]['type'] is None:
             for obj in self.object_list[0]:
                 available_plans.append(f"go grasp target object <{obj['name']}> ({obj['id']})")
@@ -477,7 +597,6 @@ class LLM:
 
     def run(self, current_step, current_room, rooms_explored, holding_objects, satisfied, object_list, obj_per_room, action_history, dialogue_history, opponent_grabbed_objects = None, opponent_last_room = None):
         info = {}
-        print("current_step", current_step)
         self.current_room = current_room
         self.rooms_explored = rooms_explored
         self.holding_objects = holding_objects
@@ -488,34 +607,18 @@ class LLM:
         dialogue_history_desc = '\n'.join(dialogue_history[-3:] if len(dialogue_history) > 3 else dialogue_history)
         prompt = self.prompt_template.replace('$GOAL$', self.goal_desc)
         prompt = prompt.replace('$PROGRESS$', progress_desc)
+        # Count only type 0 (target objects) in satisfied
+        satisfied_count = len([obj for obj in satisfied if isinstance(obj, dict) and obj.get('type') == 0])
+        prompt = prompt.replace('$COMPLETED_OBJECTS$', str(satisfied_count))
         prompt = prompt.replace('$ACTION_HISTORY$', action_history_desc)
         message = None
 
         if self.communication:
             prompt = prompt.replace('$DIALOGUE_HISTORY$', dialogue_history_desc)
-            if not action_history[-1].startswith('send a message'):
-                gen_prompt = self.generator_prompt_template.replace('$GOAL$', self.goal_desc)
-                gen_prompt = gen_prompt.replace('$PROGRESS$', progress_desc)
-                gen_prompt = gen_prompt.replace('$ACTION_HISTORY$', action_history_desc)
-                gen_prompt = gen_prompt.replace('$DIALOGUE_HISTORY$', dialogue_history_desc)
-                gen_prompt = gen_prompt + f"\n{self.agent_name}:"
-                chat_prompt = [{"role": "user", "content": gen_prompt}]
-                outputs, usage = self.generator(chat_prompt if self.chat else gen_prompt, self.sampling_params)
-                self.total_cost += usage
-                message = outputs[0]
-                if len(message) > 0 and message[0] != '"':
-                    message = re.search(r'"([^"]+)"', message)
-                    if message:
-                        message = '"' + message.group(1) + '"'
-                info['prompt_comm'] = gen_prompt
-                info['output_comm'] = outputs
-                info['usage_comm'] = usage
-                if self.debug:
-                    print(f"prompt_comm:\n{gen_prompt}")
-                    print(f"output_comm:\n{message}")
 
-        available_plans, num, available_plans_list = self.get_available_plans(message)
-        if num == 0 or (message is not None and num == 1):
+        last_action = action_history[-1].split(" at step ")[0] if len(action_history) > 0 else None
+        available_plans, num, available_plans_list = self.get_available_plans(message, last_action=last_action)
+        if num == 0:
             print("Warning! No available plans!")
             plan = None
             info.update({"num_available_actions": num,
@@ -524,51 +627,44 @@ class LLM:
 
         prompt = prompt.replace('$AVAILABLE_ACTIONS$', available_plans)
 
-        if self.cot:
-            prompt = prompt + " Let's think step by step."
-            if self.debug:
-                print(f"cot_prompt:\n{prompt}")
-            chat_prompt = [{"role": "user", "content": prompt}]
-            outputs, usage = self.generator(chat_prompt if self.chat else prompt, self.sampling_params)
-            output = outputs[0]
-            ## truncate the unfinished cot
-            last_index = output.rfind('.')
-            if last_index != -1:
-                output = output[:last_index + 1]
-            else:
-                output += '.'
-            self.total_cost += usage
-            # info['outputs_cot'] = outputs
-            # info['usage_plan_stage_1'] = usage
-            if self.debug:
-                print(f"output_plan_stage_1:\n{output}")
-            chat_prompt = [{"role": "user", "content": prompt},
-                           {"role": "assistant", "content": output},
-                           {"role": "user", "content": "Answer with only one best next action. So the answer is option"}]
-            normal_prompt = prompt + ' ' + output + ' Answer with only one best next action. So the answer is option'
-            outputs, usage = self.generator(chat_prompt if self.chat else normal_prompt, self.sampling_params)
-            output = outputs[0]
-            self.total_cost += usage
-            # info['usage_plan_stage_2'] = usage
-            if self.debug:
-                print(f"output_plan_stage_1:\n{output}")
-                print(f"total cost: {self.total_cost}")
-        else:
-            normal_prompt = prompt
-            chat_prompt = [{"role": "user", "content": prompt}]
-            if self.debug:
-                print(f"base_prompt:\n{prompt}")
-            outputs, usage = self.generator(chat_prompt if self.chat else normal_prompt, self.sampling_params)
-            output = outputs[0]
-            # info['usage_step_1'] = usage
-            if self.debug:
-                print(f"output_plan_stage_1:\n{output}")
+        # Single LLM call - CoT instruction is in prompt template
+        normal_prompt = prompt
+        chat_prompt = [{"role": "user", "content": prompt}]
+        outputs, usage = self.generator(chat_prompt if self.chat else normal_prompt, self.sampling_params)
+        output = outputs[0]
+        self.total_cost += usage
+        if self.debug:
+            print(f"output_plan:\n{output}")
+            print(f"total cost: {self.total_cost}")
         plan, flags = self.parse_answer(available_plans_list, output)
         if self.debug:
             print(f"plan: {plan}\n")
+
+        # If LLM chose "send a message", generate the message content via gen_prompt
+        if plan is not None and plan.startswith("send a message") and self.generator_prompt_template is not None:
+            gen_prompt = self.generator_prompt_template.replace('$GOAL$', self.goal_desc)
+            gen_prompt = gen_prompt.replace('$PROGRESS$', progress_desc)
+            gen_prompt = gen_prompt.replace('$COMPLETED_OBJECTS$', str(satisfied_count))
+            gen_prompt = gen_prompt.replace('$ACTION_HISTORY$', action_history_desc)
+            gen_prompt = gen_prompt.replace('$DIALOGUE_HISTORY$', dialogue_history_desc)
+            gen_chat = [{"role": "user", "content": gen_prompt}]
+            gen_outputs, gen_usage = self.generator(gen_chat if self.chat else gen_prompt, self.sampling_params)
+            self.total_cost += gen_usage
+            gen_message = gen_outputs[0].strip()
+            # Extract quoted message if present
+            quoted = re.search(r'"([^"]+)"', gen_message)
+            if quoted:
+                gen_message = '"' + quoted.group(1) + '"'
+            plan = f"send a message: {gen_message}"
+            info['prompt_comm'] = gen_prompt
+            info['output_comm'] = gen_outputs
+            info['usage_comm'] = gen_usage
+            if self.debug:
+                print(f"gen_message: {gen_message}")
+
         info.update({"num_available_actions": num,
-                     "prompt_plan_stage_2": normal_prompt,
-                     "output_plan_stage_2": output,
+                     "prompt_plan": normal_prompt,
+                     "output_plan": output,
                      "parse_exception": flags,
                      "plan": plan,
                      "total_cost": self.total_cost})

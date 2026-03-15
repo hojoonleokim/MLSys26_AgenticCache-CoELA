@@ -139,7 +139,7 @@ class TransportChallenge(AssetCachedController):
                               container_room_index: int = None, target_objects_room_index: int = None,
                               goal_room_index: int = None, task = None,
                               replicants: Union[int, List[Union[int, np.ndarray, Dict[str, float]]]] = 2,
-                              lighting: bool = True, random_seed: int = None, data_prefix = 'dataset/dataset_train') -> None:
+                              lighting: bool = True, random_seed: int = None, data_prefix = 'dataset/test_2') -> None:
         """
         Start a trial in a floorplan scene.
 

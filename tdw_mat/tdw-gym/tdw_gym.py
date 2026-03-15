@@ -697,12 +697,13 @@ class TDW(Env):
                         delay_frame_count[replicant_id] = max((len(self.messages[replicant_id]) - 1) // self.message_per_frame, 0)
             if finish: break
             data = self.controller.communicate([])
-            for i in range(len(data) - 1):
-                r_id = OutputData.get_data_type_id(data[i])
-                if r_id == 'imag':
-                    images = Images(data[i])
-                    if images.get_avatar_id() == "a" and (self.num_frames + num_frames) % 1 == 0:
-                        TDWUtils.save_images(images=images, filename= f"{self.num_frames + num_frames:05d}", output_directory = os.path.join(self.save_dir, 'top_down_image'))
+            # top_down_image saving disabled for performance
+            # for i in range(len(data) - 1):
+            #     r_id = OutputData.get_data_type_id(data[i])
+            #     if r_id == 'imag':
+            #         images = Images(data[i])
+            #         if images.get_avatar_id() == "a" and (self.num_frames + num_frames) % 1 == 0:
+            #             TDWUtils.save_images(images=images, filename= f"{self.num_frames + num_frames:05d}", output_directory = os.path.join(self.save_dir, 'top_down_image'))
             num_frames += 1
 
         self.num_frames += num_frames
